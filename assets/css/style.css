@@ -3,7 +3,16 @@
 	border: none;
 	padding: 0px;
 	margin: 0px;
+	top: 0;
+	left: 0;
+}
+div{
+	position: absolute;
 }
 
+video{
+	position: relative;
+	top: 0;
+}
 
 

@@ -19,7 +19,8 @@ function insertAfter(newElement,targetElement) {
   }
 }
 
-function init(argument) {
+// 创建layout 全局变量，让各模块能据此初始化自己的视图
+function initLayout(argument) {
 	viewport = {
 		w: window.innerWidth,
 		// h: window.innerWidth * 9 / 16,
@@ -29,23 +30,9 @@ function init(argument) {
 	unit = viewport.w / 48;
 	basepoint = {
 		x: 0,
-		y: viewport.h - unit * 13.5,
+		y: 0.5 * viewport.h - unit * 13.5,
 	}
 	// on my laptop unit = 32 = viewport.h / 27
-	source_video = {
-		w: 3840,
-		h: 800,
-		ratio: 24/5,
-		fps: 25,
-		src: "/resources/PosFlow/2min.mp4",
-	};
-	source_data = {
-		fps: 25,
-		src: "/resources/PosFlow/tracklets.json",
-	}
-	// console.log("viewport", viewport);
-	// console.log("source_video", source_video);
-	// console.log("source_video", source_data);
 	var row = [{
 			name: "header",
 			h: unit,
@@ -90,16 +77,16 @@ function init(argument) {
 			w: unit * 48,
 			h: row[2].h ,
 			main: {
-				x: basepoint.x,
-				y: basepoint.y + row[0].h + row[1].h ,
+				x: 0,
+				y: 0,
 				w: unit * 48,
 				h: row[2].main.h ,
 			},
-			control: {
-				x: basepoint.x,
-				y: basepoint.y + row[0].h + row[1].h + row[2].main.h,
+			controls: {
+				x: 0,
+				y: row[2].main.h,
 				w: unit * 48,
-				h: row[2].control.h,				
+				h: row[2].control.h,		
 			}
 		},
 		birdseye:{
@@ -116,7 +103,39 @@ function init(argument) {
 		},
 	}
 
-	console.log("layout: ", layout);
+	// console.log("layout: ", layout);
+	// console.log("basepoint: ", basepoint);
+}
+
+function init(argument) {
+	initLayout();
+	source_video = {
+		w: 3840,
+		h: 800,
+		ratio: 24/5,
+		fps: 25,
+		src: "/resources/PosFlow/2min.mp4",
+	};
+	source_data = {
+		fps: 25,
+		src: "/resources/PosFlow/tracklets.json",
+	}
+	initSVG();
+	initMonitor();
+}
+
+function initSVG(){
+	d3.select("body")
+	.append("div")
+		.attr("id", "SVG-container")
+		.attr("width", viewport.w)
+		.attr("height", viewport.h)
+
+	svg = d3.select("SVG-container")
+		.append("svg")
+			.attr("width", viewport.w)
+			.attr("height", viewport.h)
+			.attr("id", "svg")
 }
 
 addLoadEvent(init);
