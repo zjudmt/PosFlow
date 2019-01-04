@@ -1,12 +1,8 @@
 function getColorByID(ID){
 	let res = md5(ID)
-	let color = {
-		r: res.stbstr(0, 2),
-		g: res.stbstr(2, 2),
-		b: res.stbstr(4, 2),
-	}
+	let color = "#"+ res.substr(0,6);
+	return color;
 }
-
 
 function addLoadEvent(func) {
 	var oldonload = window.onload;
@@ -39,6 +35,9 @@ function getTrackletsByFrame(data, frame){
 	return current_tracklets;
 }
 
+function getCurrentFrame(){
+	return Math.floor(d3.select("#video").property("currentTime")*24);
+}
 
 // 创建layout 全局变量，让各模块能据此初始化自己的视图
 function initLayout(argument) {
@@ -161,9 +160,12 @@ function init(argument) {
 	initSVG();
 	d3.json(source_data.src, function(error, data){
 		tracklets = data;
-		initWorkspace();
-		// initBirdseye();
+		for(var tracklet in tracklets){
+			tracklet["status"] = "default";
+		}
+		// initWorkspace();
 		initMonitor();
+		initBirdseye();
 	})
 }
 
