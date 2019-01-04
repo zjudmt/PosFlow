@@ -15,4 +15,24 @@ video{
 	top: 0;
 }
 
+#controls rect{
+	stroke-width: 0;
+}
 
+.progress_bar{
+    stroke: #7c7c7c ;
+    stroke-width:16px;
+    /*fill-opacity:0;*/
+    stroke-linejoin:round;
+    stroke-linecap:round;
+}
+
+.progress_bar .watched{
+    stroke: #c1c1c1;
+}
+
+#controls .text{
+    fill: white;
+    font-size: 22pt;
+    fill-opacity: 0.9;
+}

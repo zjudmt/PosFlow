@@ -15,34 +15,6 @@ function initMonitor() {
 
 }
 
-function initVideo(){
-	// 添加video-container的div并设置布局
-	d3.select("body")
-		.append("div")
-		.attr("id","video-container")
-		.style("top", layout.monitor.main.y + "px")
-		.style("left", layout.monitor.main.x + "px")	
-	
-	// 添加视频
-	video = d3.select("#video-container")
-		.append("video")
-			.attr("width", layout.monitor.main.w + "px" )
-			.attr("height", layout.monitor.main.h + "px" )
-			.attr("controls", "controls")
-			// .attr("controls", "false")
-			.attr("preload", "auto")
-			.attr("src", source_video.src) //源视频文件位置
-			.attr("id", "video")
-			.attr("type", "video/mp4")
-
-	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
-	var video_obj = document.getElementById("video")
-	video_obj.addEventListener("canplaythrough", function(){
-		source_video.duration = this.duration;
-		source_video.seconds = Math.round(this.duration);
-		initControls();
-	})
-}
 
 function initControls(){
 	// 设置控制条的各种数值
@@ -100,24 +72,126 @@ function initControls(){
 		}
 	}
 
-	var time2x = d3.scalelinear()
+	var time2x = d3.scaleLinear()
 		.domain([0, source_video.duration])
 		.range([controls_data.progress_bar.x, controls_data.progress_bar.endpoint.x])
 
-	var x2time = d3.scalelinear()
+	var x2time = d3.scaleLinear()
 		.domain([controls_data.progress_bar.x, controls_data.progress_bar.endpoint.x])
 		.range([0, source_video.duration])
 
 	timer_controls = d3.timer(callbackControls);
 
-	controls = svg
+	var controls = monitor
 		.append("g")
-			.datum(controls_data)
+			.datum(controls_data.layout)
 			.attr("id", "controls")
+			.attr("transform", function(d){
+				let str = "translate("+d.x+","+d.y+")"
+				// console.log("this str", this, str, d)
+				return str;
+			})
+
+	var background_controls = controls
+		.append("rect")
+			.datum(controls_data.background)
+			.attr("width", function(d){return d.w})
+			.attr("height", function(d){return d.h})
+			.style("fill", function(d){return d.color})
 			.attr("transform", function(d){
 				return "translate("+d.x+","+d.y+")";
 			})
 
-	background
+	var button_controls = controls
+		.append("svg:image")
+			.datum(controls_data.button)
+			.attr("height", function(d){return d.h})
+			.attr("id", "button_controls")
+			.attr("xlink:href", function(d){return d.play.href})
+			.attr("transform", function(d){
+				return "translate("+d.x+","+d.y+")";
+			})
+			.on("click", clickPlay)
+
+	var progress_bar = controls
+		.append("g")
+		.datum(controls_data.progress_bar)
+		.attr("class", "controls progress_bar")
+		.attr("id","progress_bar")
+		.attr("transform", function(d){return "translate("+d.x+","+d.y+")";})
+		.on("mousedown",mousedown)
+		.on("mouseup",mouseup)
+		.on("mousemove",mousemove)
+
+
+	var progress_bar_bg = progress_bar
+		.append("line")
+			.datum(controls_data.progress_bar)
+			.attr("class","progress_bar controls unwatched")
+			.attr("x1",function(d){return d.x})
+			.attr("x2",function(d){return d.endpoint.x})
+			.attr("y1",function(d){return d.y})
+			.attr("y2",function(d){return d.y})
+
+	var progress_bar_watched = progress_bar
+		.append("line")
+			.datum(controls_data.progress_bar)
+			.attr("class","progress_bar controls watched")
+			.attr("x1",function(d){return d.x})
+			.attr("x2",function(d){return d.x + 10})
+			.attr("y1",function(d){return d.y})
+			.attr("y2",function(d){return d.y})
+
+	var timebox = controls
+		.append("text")
+		.datum(controls_data.timebox)
+		.attr("x",function(d){return d.x})
+		.attr("y",function(d){return d.y})
+		.attr("class","controls timebox text")
+		.attr("id","timebox")
+		.text(function(d){return d.current_time+"/"+d.total_time; })
+
+
+	function callbackControls(argument) {
+		// body...
+	}
+
+	function mousemove(){
+		// if (flag_control) {
+		// 	mouse = d3.mouse(this);
+		// 	// console.log("mousemove",mouse);
+		// 	if(mouse[0]<=42 || mouse[0]>=2770)
+		// 		flag_control = false;
+		// 	newtime = currentPosTime(mouse[0])
+		// 	video.property("currentTime",newtime);
+		// 	progress_bar_watched.attr("x2",function(d){return currentTimePos(newtime);})
+
+		// }
+	}
+	function mousedown(){
+		// flag_control = true;
+		// mouse = d3.mouse(this);
+		// if(mouse[0]<=42 || mouse[0]>=2770)
+		// 	flag_control = false;
+		// newtime = currentPosTime(mouse[0])
+		// video.property("currentTime",newtime);
+		// progress_bar_watched.attr("x2",function(d){return currentTimePos(newtime);})
+	}
+
+	function mouseup(){
+		// flag_control = false;
+	}
+
+	function clickPlay(){
+		// if (video.property("paused")){
+		// 	video._groups[0][0].play();
+		// 	button.attr("xlink:href",function(d){return d.pause.href});
+		// }
+		// else{
+		// 	video._groups[0][0].pause();
+		// 	button.attr("xlink:href",function(d){return d.play.href});
+		// }
+	}
+
 }
 
