@@ -12,11 +12,32 @@ function initMonitor() {
 			})
 			// .attr("c")
 
-
+	var video_obj = document.getElementById("video")
+	video_obj.addEventListener("canplaythrough", function(){
+		source_video.duration = this.duration;
+		source_video.seconds = Math.round(this.duration);
+		initControls();
+	})
 }
 
 
 function initControls(){
+	function getTimeText(time){
+		let t = Math.floor(time);
+		let min = Math.floor(time / 60);
+		let sec = t % 60;
+		let min_text = sec_text =  "";
+		if (min < 10)
+			min_text = "0" + min;
+		else
+			min_text += min;
+		if (sec < 10)
+			sec_text = "0" + sec;
+		else
+			sec_text += sec;
+		time_text = min_text + ":" + sec_text;
+		return time_text;
+	}
 	// 设置控制条的各种数值
 	lo = {
 		x: layout.monitor.controls.x,
@@ -28,12 +49,12 @@ function initControls(){
 			w: 1, h: 0.8,
 		},
 		progress_bar: {
-			x: 3, y: 0.4,
-			h: 0.2, w: 35,
+			x: 1, y: 0.25,
+			h: 0.2, w: 39,
 		},
 		timebox: {
-			x: 38, y: 0.1,
-			w: 8, h: 0.8,
+			x: 42, y: 0.7,
+			w: 6, h: 0.8,
 		},
 	}
 	controls_data = {
@@ -57,7 +78,7 @@ function initControls(){
 		timebox:{				
 			x: unit * lo.timebox.x , y: unit * lo.timebox.y ,
 			w: unit * lo.timebox.w , h: unit * lo.timebox.h ,
-			total_time: "--:--", current_time: "00:00",
+			total_time: getTimeText( source_video.duration ), current_time: "00:00",
 		},
 		progress_bar: {
 			x: unit * lo.progress_bar.x , y: unit * lo.progress_bar.y ,
@@ -107,6 +128,7 @@ function initControls(){
 			.datum(controls_data.button)
 			.attr("height", function(d){return d.h})
 			.attr("id", "button_controls")
+			.classed("button", true)
 			.attr("xlink:href", function(d){return d.play.href})
 			.attr("transform", function(d){
 				return "translate("+d.x+","+d.y+")";
@@ -183,14 +205,14 @@ function initControls(){
 	}
 
 	function clickPlay(){
-		// if (video.property("paused")){
-		// 	video._groups[0][0].play();
-		// 	button.attr("xlink:href",function(d){return d.pause.href});
-		// }
-		// else{
-		// 	video._groups[0][0].pause();
-		// 	button.attr("xlink:href",function(d){return d.play.href});
-		// }
+		if (video.property("paused")){
+			video._groups[0][0].play();
+			button_controls.attr("xlink:href",function(d){return d.pause.href});
+		}
+		else{
+			video._groups[0][0].pause();
+			button_controls.attr("xlink:href",function(d){return d.play.href});
+		}
 	}
 
 }

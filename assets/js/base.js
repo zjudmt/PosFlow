@@ -161,7 +161,7 @@ function init(argument) {
 	initSVG();
 	d3.json(source_data.src, function(error, data){
 		tracklets = data;
-		// initWorkspace();
+		initWorkspace();
 		// initBirdseye();
 		initMonitor();
 	})
@@ -205,20 +205,14 @@ function initVideo(){
 		.append("video")
 			.attr("width", "100%" )
 			// .attr("height", layout.monitor.main.h )
-			.attr("controls", "controls")
-			// .attr("controls", "false")
+			// .attr("controls", "controls")
+			.attr("controls", "false")
 			.attr("preload", "auto")
 			.attr("src", source_video.src) //源视频文件位置
 			.attr("id", "video")
 			.attr("type", "video/mp4")
 
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
-	var video_obj = document.getElementById("video")
-	video_obj.addEventListener("canplaythrough", function(){
-		source_video.duration = this.duration;
-		source_video.seconds = Math.round(this.duration);
-		initControls();
-	})
 
 }
 
