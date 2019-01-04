@@ -49,8 +49,10 @@ function initBirdseye(){
 			.attr("fill", function(d){
 				return getColorByID(d.id);
 			})
-			.on("hover", hoverPlayerCircle)
-			.on("click", clickPlayerCircle)
+			.on("mouseover", hoverPlayerCircle)
+			.on("mouseout", unhoverPlayerCircle)
+			.on("click", clickPlayerCircle);
+
 	// append the path representing the location of players in birdseye view
 	var path = d3.select("svg")
 			.append("g")
@@ -128,24 +130,58 @@ function initBirdseye(){
 							.y(function(d){
 								return yScale(d.y);
 							});
-		console.log(d);
 		return lineGenerator(d["boxes"]);
 	}
 
-	function hoverPlayerCircle(d,i){
-		for(var tracklet in tracklets){
-			if(tracklet["id"] = d["id"]){
-				tracklet["status"] = "hover";
+	function hoverPlayerCircle(d){
+		console.log("hover");
+		var index = 0;
+		for(; index < tracklets.length; ++index){
+			if(tracklets[index]["id"] == d["id"]){
 				break;
 			}
 		}
+		if(index == tracklets.length){
+			console.log("error");
+			return;
+		}
+		if(tracklets[index]["status"] == "default"){
+			tracklets[index]["status"] = "hover";
+			console.log(tracklets[index]);
+		}
 	}
 
-	function clickPlayerCircle(d,i){
-		for(var tracklet in tracklets){
-			if(tracklet["id"] = d["id"]){
-				tracklet["status"] = "selected";
+	function unhoverPlayerCircle(d){
+		var index = 0;
+		for(; index < tracklets.length; ++index){
+			if(tracklets[index]["id"] == d["id"]){
 				break;
+			}
+		}
+		if(index == tracklets.length){
+			console.log("error");
+			return;
+		}
+		if(tracklets[index]["status"] == "hover"){
+			tracklets[index]["status"] = "default";
+		}
+	}
+
+	function clickPlayerCircle(d){
+		var index = 0;
+		for(; index < tracklets.length; ++index){
+			if(tracklets[index]["id"] == d["id"]){
+				break;
+			}
+		}
+		if(index == tracklets.length){
+			console.log("error");
+			return;
+		}
+		tracklets[index]["status"] = "selected";
+		for(var i = 0; i < tracklets.length; ++i){
+			if(tracklets[i]["end_frame"] >= d["start_frame"] || tracklets[i]["start_frame"] <= d["end_frame"]){
+				tracklets[i]["status"] = "conflict";
 			}
 		}
 	}

@@ -143,6 +143,19 @@ function initLayout(argument) {
 	console.log("basepoint: ", basepoint);
 }
 
+function initDataStatus(data){
+	status_t = {
+		"default": "default",
+		"hover": "hover",
+		"selected": "selected",
+		"conflicted": "conflicted"
+	};
+	for(var i = 0; i < data.length; ++i){
+		data[i]["status"] = status_t["default"];
+	}
+	return data;
+}
+
 function init(argument) {
 	initLayout();
 	source_video = {
@@ -159,11 +172,8 @@ function init(argument) {
 	initVideo();
 	initSVG();
 	d3.json(source_data.src, function(error, data){
-		tracklets = data;
-		for(var tracklet in tracklets){
-			tracklet["status"] = "default";
-		}
-		// initWorkspace();
+		tracklets = initDataStatus(data);
+		initWorkspace();
 		initMonitor();
 		initBirdseye();
 	})
