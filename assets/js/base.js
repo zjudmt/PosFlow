@@ -1,12 +1,8 @@
 function getColorByID(ID){
 	let res = md5(ID)
-	let color = {
-		r: res.stbstr(0, 2),
-		g: res.stbstr(2, 2),
-		b: res.stbstr(4, 2),
-	}
+	let color = "#"+ res.substr(0,6);
+	return color;
 }
-
 
 function addLoadEvent(func) {
 	var oldonload = window.onload;
@@ -39,6 +35,9 @@ function getTrackletsByFrame(data, frame){
 	return current_tracklets;
 }
 
+function getCurrentFrame(){
+	return Math.floor(d3.select("#video").property("currentTime")*24);
+}
 
 // 创建layout 全局变量，让各模块能据此初始化自己的视图
 function initLayout(argument) {
@@ -144,6 +143,19 @@ function initLayout(argument) {
 	console.log("basepoint: ", basepoint);
 }
 
+function initDataStatus(data){
+	status_t = {
+		"default": "default",
+		"hover": "hover",
+		"selected": "selected",
+		"conflicted": "conflicted"
+	};
+	for(var i = 0; i < data.length; ++i){
+		data[i]["status"] = status_t["default"];
+	}
+	return data;
+}
+
 function init(argument) {
 	initLayout();
 	source_video = {
@@ -160,10 +172,10 @@ function init(argument) {
 	initVideo();
 	initSVG();
 	d3.json(source_data.src, function(error, data){
-		tracklets = data;
+		tracklets = initDataStatus(data);
 		initWorkspace();
-		// initBirdseye();
 		initMonitor();
+		initBirdseye();
 	})
 }
 
