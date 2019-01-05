@@ -43,7 +43,7 @@ function initWorkspace(){
 	// var range_tracklets=getTrackletsInRange(tracklets,frame, past_duration, future_duration)
 
 
-	var workspace=d3.select("svg")
+	workspace=d3.select("svg")
 		.append("g")
 		.attr("transform","translate("+x_start+","+y_start+")")
 		.attr("id","workspace")
@@ -56,18 +56,7 @@ function initWorkspace(){
             d3.select(this).attr("transform", "translate(" + 0 + "," + d3.event.y + ")");
         })
 
-	var zoom = d3.zoom()
-				// .scaleExtent([1, 10])
-				// .translateExtent([[0,0], [100, 100]])
-				.extent([[0,0],[10,10]])
-				.on("zoom", zoomed);
-	// console.log(zoom.extent)
-
-	function zoomed() {
-		console.log(d3.event.transform)
-		d3.select("#content-toselect").attr("transform", "translate(0,"+d3.event.transform.y+")");
-	}
-
+	
 
 
 		// console.log(d3.select("#ws_content").transform)
@@ -84,24 +73,11 @@ function initWorkspace(){
 	
 	
 		
-	var selected=content.append("g")
-		.attr("id","content-selected")
-
-	var toselect=content.append("g")
-
-		.attr("id","content-toselect")
-		.attr("transform","translate(0,"+height_select+")")
-		// .call(zoom)
-
-		
-		
-		// .call(draged)
-	toselect.append("pattern")
-		.attr("id","ws-pattern")
-		.attr("width",width_workspace)
-		.attr("height",height_workspace-height_select)
-		.attr("viewbox","0,0,"+width_workspace+","+height_workspace-height_select)
 	
+
+		
+		
+		
 
 
 	// 背景框
@@ -127,59 +103,89 @@ function initWorkspace(){
 	// 当前帧虚线表示
 	background.append("line")
 		.attr("id", "current")
-		.attr("x1",width_rect+Math.round(width_line/2))
+		.attr("x1",width_rect+Math.round(width_line*past_duration/(future_duration+past_duration)))
 		.attr("y1",0)
-		.attr("x2",width_rect+Math.round(width_line/2))
+		.attr("x2",width_rect+Math.round(width_line*past_duration/(future_duration+past_duration)))
 		.attr("y2",height_workspace)
 
 
-	// 处理数据
-	for(var i=0;i<range_tracklets.length;i++){
-		var newline=[]
-		var x_startline=Math.round(range_tracklets[i].x_start*width_line),
-			x_endline=Math.round(range_tracklets[i].x_end*width_line),
-			y_line=(i+1)*(distance_line+thickness_line);
 
-		newline.push([x_startline,y_line],[x_endline,y_line]);
-		range_tracklets[i].line=newline;
+	var zoom = d3.zoom()
+				// .scaleExtent([1, 10])
+				// .translateExtent([[0,0], [100, 100]])
+				.extent([[0,0],[10,10]])
+				.on("zoom", zoomed);
+	// console.log(zoom.extent)
 
-		// console.log(range_tracklets[i])
+	function zoomed() {
+		console.log(d3.event.transform)
+		d3.select("#content-toselect").attr("transform", "translate(0,"+d3.event.transform.y+")");
 	}
+	let zoomRect = content.append("g").append("rect") //设置缩放的区域，一般覆盖整个绘图区
+     .attr("width",width_workspace)
+     .attr("height",height_workspace-height_select)
+     .attr("transform","translate(0,"+height_select+")")
+     .attr("fill","none")
+     .attr("pointer-events","all")
+     .call(zoom);
+		
 
-	// 
-	var lineGenerator=d3.line()
-		.x(function(d){return d[0]})
-		.y(function(d){return d[1]})
+	
+}
+
+
+function updateWorkspace(){
+
+	var x_start=layout.workspace.x//workspace起始位置
+	var y_start=layout.workspace.y
+	var width_workspace=layout.workspace.w//ws宽度
+	var height_workspace=layout.workspace.h//ws高度
+
+	var color_bg="#191b21" //
+
+	
+	var height_select=Math.round(height_workspace*0.1)//选择框高度
+
+
+
+	var width_rect=0//id框宽高
+	var height_rect=10
+
+	var width_line=width_workspace-width_rect//wsline宽度
+	var thickness_line=10 //线条宽度
+	var distance_line=5 //线条之间距离
+
+
+
+
+
+	var content=d3.select("#ws_content")
+
+	content.selectAll("g").remove();
+
+
+
+	var selected=content.append("g")
+		.attr("id","content-selected")
+
+	var toselect=content.append("g")
+
+		.attr("id","content-toselect")
+		.attr("transform","translate(0,"+height_select+")")
 
 	var groups=toselect.selectAll("g")
-		.data(range_tracklets)
+		.data(range_trackletsWsVer)
 		.enter()
 		.append("g")
 		.attr("id",function(d){return "ws_"+d.id})
 
-	// var g_rect=groups.append("g")
-	// 	.attr("transform",function(d){return "translate(2,"+(d.line[0][1]-Math.round(height_rect/2))+")"})
-	// 	.attr("id",function(d){return "wsrect_"+d.id})
-
-	// // g_rect.append("rect")
-	// // 	.attr("width",width_rect-4)
-	// // 	.attr("height",height_rect)
-	// // 	.attr("stroke",function(d){return d.color})
-	// // 	.attr("stroke-width",1)
-	// // 	.attr("fill","none")
-
-	// g_rect.append("text")
-	// 	.text(function(d){return d.id})
-	// 	.attr("dy","1em")
-	// 	.attr("class","text_rect_ws")
-	// 	.attr("font-size","50%")
+	
 
 
 	var wsline=groups.append("g")
 		.attr("transform","translate("+width_rect+",0)")
 		.attr("id",function(d){return "wsline_"+d.id})
-		.attr("fill","url(#ws-pattern")
-
+		// .call(zoom)
 	wsline.append("line")
 		.attr("x1",function(d){return width_workspace*(d.start_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("x2",function(d){return width_workspace*(d.end_frame-(frame-past_duration))/(past_duration+future_duration)})
@@ -188,40 +194,6 @@ function initWorkspace(){
 		// .attr("clip-path", "url(#ws-clipPath)")
 		.attr("stroke",function(d){return d.color})
 		.attr("stroke-width",thickness_line)
-		.attr('d',function(d){return lineGenerator(d.line)})
-
-	let zoomRect = workspace.append("rect") //设置缩放的区域，一般覆盖整个绘图区
-     .attr("width",width_workspace)
-     .attr("height",height_workspace-height_select)
-     .attr("transform","translate(0,"+height_select+")")
-     .attr("fill","none")
-     .attr("pointer-events","all")
-     .call(zoom);	
+		
+		
 }
-
-// function dataToWorkspace(tracklets,frame){
-// 	var newdata=[],
-// 		frame_range=75,
-// 		num=0;
-// 	var point_start=frame-frame_range,
-// 		point_end=frame+frame_range;
-
-
-// 	for(var i=0;i<tracklets.length;i++){
-// 		if(tracklets[i].start_frame<point_end&&tracklets[i].end_frame>point_start){
-// 			var newobj={}
-// 			newobj.id=tracklets[i].id;
-// 			newobj.x_start=Math.max(tracklets[i].start_frame-point_start,0)/(2*frame_range);
-// 			newobj.x_end=Math.min(tracklets[i].end_frame-point_start,2*frame_range)/(2*frame_range);
-// 			newdata.push(newobj);
-// 		}
-// 	}
-// 	num=newdata.length
-// 	for(var i=0;i<num;i++){
-// 		newdata[i].y=(i+1)/(num+1);
-// 		newdata[i].color="#"
-// 	}
-// 	return newdata;
-// }	
-
-
