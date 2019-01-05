@@ -4,7 +4,7 @@ function initMonitor() {
 		.append("g")
 			.attr("id", "monitor")
 			.datum(layout.monitor)
-			.classed("controls", true)
+			// .classed("controls", true)
 			.attr("transform", function(d){
 				let str = "translate( " + d.x
 				+ " , " + d.y + " )";
@@ -12,33 +12,35 @@ function initMonitor() {
 			})
 			// .attr("c")
 
+
 	var video_obj = document.getElementById("video")
 	video_obj.addEventListener("canplaythrough", function(){
-		console.log("hhh");
 		source_video.duration = this.duration;
 		source_video.seconds = Math.round(this.duration);
 		initControls();
+		initMain();
 	})
 }
 
+function getTimeText(current_time){
+	let t = Math.floor(current_time);
+	let min = Math.floor(current_time / 60);
+	let sec = t % 60;
+	let min_text = sec_text =  "";
+	if (min < 10)
+		min_text = "0" + min;
+	else
+		min_text += min;
+	if (sec < 10)
+		sec_text = "0" + sec;
+	else
+		sec_text += sec;
+	time_text = min_text + ":" + sec_text;
+	return time_text;
+}
 
 function initControls(){
-	function getTimeText(time){
-		let t = Math.floor(time);
-		let min = Math.floor(time / 60);
-		let sec = t % 60;
-		let min_text = sec_text =  "";
-		if (min < 10)
-			min_text = "0" + min;
-		else
-			min_text += min;
-		if (sec < 10)
-			sec_text = "0" + sec;
-		else
-			sec_text += sec;
-		time_text = min_text + ":" + sec_text;
-		return time_text;
-	}
+
 	// 设置控制条的各种数值
 	lo = {
 		x: layout.monitor.controls.x,
@@ -84,6 +86,7 @@ function initControls(){
 		progress_bar: {
 			x: unit * lo.progress_bar.x , y: unit * lo.progress_bar.y ,
 			w: unit * lo.progress_bar.w , h: unit * lo.progress_bar.h ,
+			x2: unit * lo.progress_bar.x,
 			color: {
 				unwatched: "#7c7c7c",
 				watched: "#c1c1c1",
@@ -94,16 +97,18 @@ function initControls(){
 		}
 	}
 
-	var time2x = d3.scaleLinear()
+	time2x = d3.scaleLinear()
 		.domain([0, source_video.duration])
 		.range([controls_data.progress_bar.x, controls_data.progress_bar.endpoint.x])
 
-	var x2time = d3.scaleLinear()
+	x2time = d3.scaleLinear()
 		.domain([controls_data.progress_bar.x, controls_data.progress_bar.endpoint.x])
 		.range([0, source_video.duration])
 
 	timer_controls = d3.timer(callbackControls);
+	flag_control = false;
 
+	// 添加各个元素并设置属性
 	var controls = monitor
 		.append("g")
 			.datum(controls_data.layout)
@@ -146,7 +151,6 @@ function initControls(){
 		.on("mouseup",mouseup)
 		.on("mousemove",mousemove)
 
-
 	var progress_bar_bg = progress_bar
 		.append("line")
 			.datum(controls_data.progress_bar)
@@ -161,7 +165,7 @@ function initControls(){
 			.datum(controls_data.progress_bar)
 			.attr("class","progress_bar controls watched")
 			.attr("x1",function(d){return d.x})
-			.attr("x2",function(d){return d.x + 10})
+			.attr("x2",function(d){return d.x2})
 			.attr("y1",function(d){return d.y})
 			.attr("y2",function(d){return d.y})
 
@@ -172,49 +176,142 @@ function initControls(){
 		.attr("y",function(d){return d.y})
 		.attr("class","controls timebox text")
 		.attr("id","timebox")
-		.text(function(d){return d.current_time+"/"+d.total_time; })
 
 
-	function callbackControls(argument) {
-		// body...
+	function callbackControls() {
+		if (video.property("paused")) {
+			button_controls.attr("xlink:href",function(d){return d.play.href});
+		}
+		else{
+			button_controls.attr("xlink:href",function(d){return d.pause.href});
+		}
+		var current_time = video.property("currentTime");
+		var time_text = getTimeText(current_time);
+		controls_data.timebox.current_time = time_text;
+		timebox.text(function(d){return d.current_time+"/"+d.total_time; })
+		controls_data.progress_bar.x2 = time2x(current_time);
+		progress_bar_watched.attr("x2",function(d){return d.x2})
 	}
 
 	function mousemove(){
-		// if (flag_control) {
-		// 	mouse = d3.mouse(this);
-		// 	// console.log("mousemove",mouse);
-		// 	if(mouse[0]<=42 || mouse[0]>=2770)
-		// 		flag_control = false;
-		// 	newtime = currentPosTime(mouse[0])
-		// 	video.property("currentTime",newtime);
-		// 	progress_bar_watched.attr("x2",function(d){return currentTimePos(newtime);})
+		if (flag_control) {
+			mouse = d3.mouse(this);
+			console.log("mousemove",mouse);
+			if(mouse[0] <= controls_data.progress_bar.x ||
+			 mouse[0]>= controls_data.progress_bar.endpoint.x )
+				flag_control = false;
+			newtime = x2time(mouse[0])
+			video.property("currentTime",newtime);
+			// controls_data.timebox.current_time = newtime;
 
-		// }
+		}
 	}
 	function mousedown(){
-		// flag_control = true;
-		// mouse = d3.mouse(this);
-		// if(mouse[0]<=42 || mouse[0]>=2770)
-		// 	flag_control = false;
-		// newtime = currentPosTime(mouse[0])
-		// video.property("currentTime",newtime);
-		// progress_bar_watched.attr("x2",function(d){return currentTimePos(newtime);})
+		flag_control = true;
+		mouse = d3.mouse(this);
+		if(mouse[0] <= controls_data.progress_bar.x ||
+		 mouse[0] >= controls_data.progress_bar.endpoint.x)
+			flag_control = false;
+		newtime = x2time(mouse[0])
+		video.property("currentTime",newtime);
+		// controls_data.timebox.current_time = newtime;
 	}
 
 	function mouseup(){
-		// flag_control = false;
+		flag_control = false;
 	}
 
 	function clickPlay(){
 		if (video.property("paused")){
 			video._groups[0][0].play();
-			button_controls.attr("xlink:href",function(d){return d.pause.href});
 		}
 		else{
 			video._groups[0][0].pause();
-			button_controls.attr("xlink:href",function(d){return d.play.href});
 		}
 	}
 
 }
+
+function initMain() {
+	var layout_main = layout.monitor.main
+
+	vid2x = d3.scaleLinear()
+		.domain([0, source_video.w])
+		.range([layout_main.x, layout_main.x + layout_main.w])
+
+	vid2y = d3.scaleLinear()
+		.domain([0, source_video.h])
+		.range([layout_main.y, layout_main.y + layout_main.h])
+
+	vid2w = d3.scaleLinear()
+		.domain([0, source_video.w])
+		.range([0, layout_main.w])
+
+	vid2h = d3.scaleLinear()
+		.domain([0, source_video.h])
+		.range([0, layout_main.h])
+
+
+	players = monitor.append("g")
+		.attr("id", "players")
+
+}
+
+function getPlayerTransform(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	var pos = d["boxes"][index];
+	var str = "translate(" + vid2x(pos[0]) +
+	" , " + vid2y(pos[1]) + ")";
+	// console.log(d.id, str);
+	return str;
+}
+
+function getPlayerRectWidth(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	var pos = d["boxes"][index];
+	var w = vid2w(pos[2])
+	// console.log(w);
+	return w;
+}
+
+function getPlayerRectHeight(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	var pos = d["boxes"][index];
+	var h = vid2h(pos[3])
+	// console.log(d, h);
+	return h;
+}
+
+function updateMonitor() {
+	updateMain();
+}
+
+function updateMain() {
+	players = monitor.select("#players")
+		.selectAll("g").data(current_tracklets)
+	players.enter().append("g")
+	players.exit().remove();
+
+	players.attr("transform", getPlayerTransform)
+		.classed("main player", true)
+		.attr("id", function(d) {
+			return "main_" + d.id;
+		})
+
+	players.selectAll("rect").remove();
+
+	rects = players.append("rect")
+		.attr("width", getPlayerRectWidth)
+		.attr("height", getPlayerRectHeight)
+		.attr("stroke", function(d){return d.color})
+		.classed("rect default", true)
+		.attr("id", function(d){
+			// console.log("300 d: ", d)
+			return "rect_main_" + d.id} )
+
+}
+
 

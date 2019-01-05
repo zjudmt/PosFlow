@@ -17,6 +17,15 @@ video{
 video::-webkit-media-controls {
   display:none !important;
 }
+
+.main .rect{
+	cursor: pointer;
+	fill-opacity: 0;
+	stroke-width: 2px;
+	stroke-linejoin: round; 
+	stroke-opacity: 1;
+}
+
 #controls rect{
 	stroke-width: 0;
 }
@@ -42,3 +51,5 @@ video::-webkit-media-controls {
 .button{
     cursor: pointer;
 }
+
+
