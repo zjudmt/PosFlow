@@ -14,8 +14,17 @@ video{
 	position: relative;
 	top: 0;
 }
+
 video::-webkit-media-controls {
   display:none !important;
+}
+
+line{
+	stroke-linecap: butt;
+}
+
+body{
+	background-color: #191b21;
 }
 
 .main .rect{
@@ -52,4 +61,26 @@ video::-webkit-media-controls {
     cursor: pointer;
 }
 
+#ws_bg rect{
+	/*fill: aqua;*/
+	/*fill: #7a7374;*/
+	fill: #191b21;
+	/*fill: white;*/
+	/*stroke: #191b21;*/
+	stroke: #1ba784;
+	stroke-width: 2;
+	stroke-linejoin: round;
+}
 
+#ws_bg line{
+	stroke: #1ba784;
+	stroke-width: 2;
+}
+
+#seperation{
+	stroke: aqua;
+}
+
+#current{
+	stroke-dasharray: 5,5 ;
+}

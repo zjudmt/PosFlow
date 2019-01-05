@@ -231,6 +231,8 @@ function getTrackletsInRange(data, frame, past_duration, future_duration){
 			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
 			// to correct the error of the data;
 			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
+			tracklet["start_frame"] = data[i]["start_frame"] + start_index;
+			tracklet["end_frame"] = data[i]["start_frame"] + end_index-1;			
 			// fill in the tracklet["boxes"]
 			for(var j = start_index; j < end_index; ++j){
 				var pos = data[i]["boxes"][j];

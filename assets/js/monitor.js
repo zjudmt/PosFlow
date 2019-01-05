@@ -14,6 +14,8 @@ function initMonitor() {
 	video_obj.addEventListener("canplaythrough", function(){
 		source_video.duration = this.duration;
 		source_video.seconds = Math.round(this.duration);
+		initControls();
+		initMain();
 	})
 }
 
@@ -285,6 +287,7 @@ function updateMonitor() {
 }
 
 function updateMain() {
+	// console.log("updateMain")
 	players = monitor.select("#players")
 		.selectAll("g").data(current_tracklets)
 	players.enter().append("g")
