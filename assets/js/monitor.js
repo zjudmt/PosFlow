@@ -14,6 +14,7 @@ function initMonitor() {
 
 	var video_obj = document.getElementById("video")
 	video_obj.addEventListener("canplaythrough", function(){
+		console.log("hhh");
 		source_video.duration = this.duration;
 		source_video.seconds = Math.round(this.duration);
 		initControls();
