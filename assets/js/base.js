@@ -56,6 +56,40 @@ var selection = [];
 	return selection;
 }
 
+function getTrackletsInRangeWsVer(data, frame, past_duration, future_duration){
+var selection = [];
+	for(var i = 0; i < data.length; ++i){
+		if(data[i]["start_frame"] <= frame+future_duration && frame-past_duration <= data[i]["end_frame"]){
+			var tracklet = {};
+			// deep copy
+			for(item in data[i]){
+				if(typeof data[i][item] == "object"){
+					tracklet[item] = [];
+				}
+				else{
+					tracklet[item] = data[i][item];
+				}
+			}
+			// set range
+			var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
+			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
+			// to correct the error of the data;
+			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
+
+			tracklet["start_frame"]=start_index+data[i]["start_frame"];
+			tracklet["end_frame"]=end_index+data[i]["start_frame"];
+			// fill in the tracklet["boxes"]
+			for(var j = start_index; j < end_index; ++j){
+				var pos = data[i]["boxes"][j];
+				tracklet["boxes"].push(pos);
+			}
+			selection.push(tracklet);
+		}
+	}
+	return selection;
+}
+
+
 function getCurrentFrame(){
 	return Math.floor(d3.select("#video").property("currentTime")*source_video.fps);
 }
@@ -204,6 +238,8 @@ function init(argument) {
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
 		range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
+		range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
+
 		// test();
 		initMonitor();
 		initWorkspace();
@@ -249,8 +285,9 @@ function update() {
 	frame = getCurrentFrame();
 	current_tracklets = getTrackletsByFrame(tracklets, frame);
 	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
+	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
 
-	// updateWorkspace();
+	updateWorkspace();
 	updateMonitor();
 	// updateBirdseye();
 }
