@@ -4,14 +4,11 @@ function initMonitor() {
 		.append("g")
 			.attr("id", "monitor")
 			.datum(layout.monitor)
-			// .classed("controls", true)
 			.attr("transform", function(d){
 				let str = "translate( " + d.x
 				+ " , " + d.y + " )";
 				return str
 			})
-			// .attr("c")
-
 
 	var video_obj = document.getElementById("video")
 	video_obj.addEventListener("canplaythrough", function(){
