@@ -108,6 +108,7 @@ function initLayout(argument) {
 }
 
 function init(argument) {
+	console.log("init")
 	initLayout();
 	source_video = {
 		w: 3840,
@@ -120,6 +121,7 @@ function init(argument) {
 		fps: 25,
 		src: "/resources/PosFlow/tracklets.json",
 	}
+	initVideo();
 	initSVG();
 	initMonitor();
 }

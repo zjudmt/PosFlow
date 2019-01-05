@@ -1,5 +1,4 @@
 function initMonitor() {
-
 	monitor = svg
 		.append("g")
 			.attr("id", "monitor")
@@ -17,6 +16,7 @@ function initMonitor() {
 
 function initVideo(){
 	// 添加video-container的div并设置布局
+	console.log("initVideo")
 	d3.select("body")
 		.append("div")
 		.attr("id","video-container")
