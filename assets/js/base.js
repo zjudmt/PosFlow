@@ -252,7 +252,7 @@ function update() {
 
 	// updateWorkspace();
 	updateMonitor();
-	// updateBirdseye();
+	updateBirdseye();
 }
 
 

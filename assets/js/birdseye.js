@@ -3,16 +3,7 @@ function initBirdseye(){
 	var y = layout.birdseye.y;
 	var width = layout.birdseye.w;
 	var height = layout.birdseye.h;
-	var padding = {left:30, right:30, top:20, bottom:20};
-
-	var xScale = d3.scaleLinear()
-					.domain([-17, 107])
-					.range([x, x+width-padding.left-padding.right]);
-	var yScale = d3.scaleLinear()
-				.domain([-10, 88])
-				.range([y+height-padding.bottom, y+padding.top]);
-
-	var birdseyeLayout = d3.select("svg")
+	birdseyeLayout = d3.select("svg")
 						.append("g")
 						.attr("id", "birdseye");
 
@@ -24,6 +15,23 @@ function initBirdseye(){
 				})
             	.attr("width", width)
             	.attr("height", height);
+}
+
+function updateBirdseye(){
+	var x = layout.birdseye.x;
+	var y = layout.birdseye.y;
+	var width = layout.birdseye.w;
+	var height = layout.birdseye.h;
+	var padding = {left:30, right:30, top:20, bottom:20};
+
+	var xScale = d3.scaleLinear()
+					.domain([-17, 107])
+					.range([x, x+width-padding.left-padding.right]);
+	var yScale = d3.scaleLinear()
+				.domain([-10, 88])
+				.range([y+height-padding.bottom, y+padding.top]);
+
+	birdseyeLayout.selectAll("g").remove();
 
 	// append the points representing the location of players in birdseye view
 	var circles = birdseyeLayout.append("g")
@@ -71,13 +79,12 @@ function initBirdseye(){
 	 		})
 	 		.attr("d", trackGenerator)
 	 		.attr("fill-opacity", "0")
-	 		.attr("stroke-opacity", "1")
+	 		.attr("stroke-opacity", "0")
 	 		.attr("stroke-width", 2)
 			.attr("stroke", function(d){
 				return d["color"];
 			});
-
-	// change the data from the pixels in screen to the real play field
+		// change the data from the pixels in screen to the real play field
 	// that is [0,3840] * [0,800] ----> [0,105]*[0,68] + outside
 	function birdseyeTransition(box){
 		var x = box[0];
@@ -154,4 +161,5 @@ function initBirdseye(){
 			}
 		}
 	}
+
 }
