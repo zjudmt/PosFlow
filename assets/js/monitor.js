@@ -22,24 +22,25 @@ function initMonitor() {
 	})
 }
 
+function getTimeText(current_time){
+	let t = Math.floor(current_time);
+	let min = Math.floor(current_time / 60);
+	let sec = t % 60;
+	let min_text = sec_text =  "";
+	if (min < 10)
+		min_text = "0" + min;
+	else
+		min_text += min;
+	if (sec < 10)
+		sec_text = "0" + sec;
+	else
+		sec_text += sec;
+	time_text = min_text + ":" + sec_text;
+	return time_text;
+}
 
 function initControls(){
-	function getTimeText(current_time){
-		let t = Math.floor(current_time);
-		let min = Math.floor(current_time / 60);
-		let sec = t % 60;
-		let min_text = sec_text =  "";
-		if (min < 10)
-			min_text = "0" + min;
-		else
-			min_text += min;
-		if (sec < 10)
-			sec_text = "0" + sec;
-		else
-			sec_text += sec;
-		time_text = min_text + ":" + sec_text;
-		return time_text;
-	}
+
 	// 设置控制条的各种数值
 	lo = {
 		x: layout.monitor.controls.x,
@@ -96,11 +97,11 @@ function initControls(){
 		}
 	}
 
-	var time2x = d3.scaleLinear()
+	time2x = d3.scaleLinear()
 		.domain([0, source_video.duration])
 		.range([controls_data.progress_bar.x, controls_data.progress_bar.endpoint.x])
 
-	var x2time = d3.scaleLinear()
+	x2time = d3.scaleLinear()
 		.domain([controls_data.progress_bar.x, controls_data.progress_bar.endpoint.x])
 		.range([0, source_video.duration])
 
@@ -250,47 +251,58 @@ function initMain() {
 		.domain([0, source_video.h])
 		.range([0, layout_main.h])
 
-	var frame = getCurrentFrame();
-
-	function getPlayerTransform(d) {
-		var index = frame-d["start_frame"];
-		index = d3.min([index, d["boxes"].length-1]);
-		var pos = d["boxes"][index];
-		var str = "translate(" + vid2x(pos[0]) +
-		" , " + vid2y(pos[1]) + ")";
-		console.log(d.id, str);
-		return str;
-	}
-
-	function getPlayerRectWidth(d) {
-		var index = frame-d["start_frame"];
-		index = d3.min([index, d["boxes"].length-1]);
-		var pos = d["boxes"][index];
-		var w = vid2w(pos[2])
-		// console.log(w);
-		return w;
-	}
-
-	function getPlayerRectHeight(d) {
-		var index = frame-d["start_frame"];
-		index = d3.min([index, d["boxes"].length-1]);
-		var pos = d["boxes"][index];
-		var h = vid2h(pos[3])
-		// console.log(d, h);
-		return h;
-	}
 
 	players = monitor.append("g")
-			.classed("g players", true)
-		.selectAll("g")
-		.data(current_tracklets)
-		.enter().append("g")
-			.attr("transform", getPlayerTransform)
-			.classed("main player", true)
-			.attr("id", function(d) {
-				return "main_" + d.id;
-			})
+		.attr("id", "players")
 
+
+}
+
+function getPlayerTransform(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	var pos = d["boxes"][index];
+	var str = "translate(" + vid2x(pos[0]) +
+	" , " + vid2y(pos[1]) + ")";
+	// console.log(d.id, str);
+	return str;
+}
+
+function getPlayerRectWidth(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	var pos = d["boxes"][index];
+	var w = vid2w(pos[2])
+	// console.log(w);
+	return w;
+}
+
+function getPlayerRectHeight(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	var pos = d["boxes"][index];
+	var h = vid2h(pos[3])
+	// console.log(d, h);
+	return h;
+}
+
+function updateMonitor() {
+	updateMain();
+}
+
+function updateMain() {
+	players = monitor.select("#players")
+		.selectAll("g").data(current_tracklets)
+	players.enter().append("g")
+	players.exit().remove();
+
+	players.attr("transform", getPlayerTransform)
+		.classed("main player", true)
+		.attr("id", function(d) {
+			return "main_" + d.id;
+		})
+
+	players.selectAll("rect").remove();
 
 	rects = players.append("rect")
 		.attr("width", getPlayerRectWidth)
@@ -301,17 +313,6 @@ function initMain() {
 			// console.log("300 d: ", d)
 			return "rect_main_" + d.id} )
 
-
-}
-
-function updateMonitor() {
-	updateMain();
-}
-
-function updateMain() {
-	players.attr("transform", getPlayerTransform);
-	rects.attr("width", getPlayerRectWidth)
-		.attr("height", getPlayerRectHeight)
 }
 
 
