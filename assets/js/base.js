@@ -16,15 +16,6 @@ function addLoadEvent(func) {
 	}
 }
 
-function insertAfter(newElement,targetElement) {
-  var parent = targetElement.parentNode;
-  if (parent.lastChild == targetElement) {
-    parent.appendChild(newElement);
-  } else {
-    parent.insertBefore(newElement,targetElement.nextSibling);
-  }
-}
-
 function getTrackletsByFrame(data, frame){
 	var current_tracklets = [];
 	for(var i = 0; i < data.length; ++i){
@@ -35,8 +26,38 @@ function getTrackletsByFrame(data, frame){
 	return current_tracklets;
 }
 
+function getTrackletsInRange(data, frame, past_duration, future_duration){
+var selection = [];
+	for(var i = 0; i < data.length; ++i){
+		if(data[i]["start_frame"] <= frame && frame <= data[i]["end_frame"]){
+			var tracklet = {};
+			// deep copy
+			for(item in data[i]){
+				if(typeof data[i][item] == "object"){
+					tracklet[item] = [];
+				}
+				else{
+					tracklet[item] = data[i][item];
+				}
+			}
+			// set range
+			var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
+			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
+			// to correct the error of the data;
+			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
+			// fill in the tracklet["boxes"]
+			for(var j = start_index; j < end_index; ++j){
+				var pos = data[i]["boxes"][j];
+				tracklet["boxes"].push(pos);
+			}
+			selection.push(tracklet);
+		}
+	}
+	return selection;
+}
+
 function getCurrentFrame(){
-	return Math.floor(d3.select("#video").property("currentTime")*24);
+	return Math.floor(d3.select("#video").property("currentTime")*source_video.fps);
 }
 
 // 创建layout 全局变量，让各模块能据此初始化自己的视图
@@ -63,37 +84,40 @@ function initLayout(argument) {
 		y: 0,
 	}
 	// on my laptop unit = 32 = viewport.h / 27
-	var row = [{
-				name: "header",
-				h: unit,
-			},{
-				name: "void",
-				h: unit * 5,
-			},{
-				name: "monitor",
-				h: unit * 11,
-				main: {
-					h: unit * 10,
-				},
-				control: {
+	var row = [
+				{
+					name: "header",
 					h: unit,
-				}
+				},{
+					name: "void",
+					h: unit * 5,
+				},{
+					name: "monitor",
+					h: unit * 11,
+					main: {
+						h: unit * 10,
+					},
+					control: {
+						h: unit,
+					}
 
-			},{
-				name: "factory",
-				h:  unit * 10,
-				col: [{
-					name: "blank",
-					w: unit * 16,
-				},{				
-					name: "birdseye",
-					w: unit * 16,
-				},{				
-					name: "workspace",
-					w: unit * 16,
-			}]
-		}
-	]
+				},{
+					name: "factory",
+					h:  unit * 10,
+					col: [
+							{
+								name: "blank",
+								w: unit * 16,
+							},{				
+								name: "birdseye",
+								w: unit * 16,
+							},{				
+								name: "workspace",
+								w: unit * 16,
+							}
+						]
+					}
+			]
 	layout = {
 		video:{
 			x: 0,
@@ -143,7 +167,7 @@ function initLayout(argument) {
 	console.log("basepoint: ", basepoint);
 }
 
-function initDataStatus(data){
+function initData(data){
 	status_t = {
 		"default": "default",
 		"hover": "hover",
@@ -152,6 +176,7 @@ function initDataStatus(data){
 	};
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
+		data[i]["color"] =  getColorByID(data[i].id);
 	}
 	return data;
 }
@@ -169,14 +194,28 @@ function init(argument) {
 		fps: 25,
 		src: "/resources/PosFlow/tracklets.json",
 	}
+	var past_duration = 5 * source_video.fps;
+	var future_duration = 5 * source_video.fps;
 	initVideo();
 	initSVG();
+	initHeader();
 	d3.json(source_data.src, function(error, data){
-		tracklets = initDataStatus(data);
+		tracklets = initData(data);
+		current_tracklets = getTrackletsByFrame(tracklets, 0);
+		range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration);
 		initWorkspace();
 		initMonitor();
 		initBirdseye();
 	})
+}
+
+function update() {
+	frame = getCurrentFrame();
+	current_tracklets = getTrackletsByFrame(tracklets, frame);
+	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration);
+	updateWorkspace();
+	updateMonitor();
+	updateBirdseye();
 }
 
 function initSVG(){
