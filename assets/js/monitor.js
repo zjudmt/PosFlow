@@ -1,4 +1,5 @@
 function initMonitor() {
+
 	monitor = svg
 		.append("g")
 			.attr("id", "monitor")
@@ -16,7 +17,6 @@ function initMonitor() {
 
 function initVideo(){
 	// 添加video-container的div并设置布局
-	console.log("initVideo")
 	d3.select("body")
 		.append("div")
 		.attr("id","video-container")
@@ -40,7 +40,7 @@ function initVideo(){
 	video_obj.addEventListener("canplaythrough", function(){
 		source_video.duration = this.duration;
 		source_video.seconds = Math.round(this.duration);
-		initControls();
+		// initControls();
 	})
 }
 
