@@ -17,8 +17,6 @@ function initMonitor() {
 	video_obj.addEventListener("canplaythrough", function(){
 		source_video.duration = this.duration;
 		source_video.seconds = Math.round(this.duration);
-		initControls();
-		initMain();
 	})
 }
 

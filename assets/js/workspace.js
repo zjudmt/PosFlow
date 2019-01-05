@@ -55,11 +55,13 @@ function initWorkspace(){
 	var height_select=Math.round(height_workspace*0.1)//选择框高度
 
 
-	var width_rect=30//id框宽高
+
+	var width_rect=0//id框宽高
 	var height_rect=10
 
 	var width_line=width_workspace-width_rect//wsline宽度
-	var thickness_line=3//线条宽度
+	var thickness_line=10//线条宽度
+	var distance_line=20//线条之间距离
 	
 	// 选取前后五秒出现的轨迹
 	var data_handled=dataToWorkspace(tracklets,frame_current)
@@ -72,8 +74,63 @@ function initWorkspace(){
 
 	var background=workspace.append("g")
 		.attr("id","ws_bg")
+
+
+
+	var draged = d3.drag()
+        .on('drag', function (d) {
+            d3.select(this).attr("transform", "translate(" + 0 + "," + d3.event.y + ")");
+        })
+
+	var zoom = d3.zoom()
+				// .scaleExtent([1, 10])
+				// .translateExtent([[0,0], [100, 100]])
+				.extent([[0,0],[10,10]])
+				.on("zoom", zoomed);
+	// console.log(zoom.extent)
+
+	function zoomed() {
+		console.log(d3.event.transform)
+		d3.select("#content-toselect").attr("transform", "translate(0,"+d3.event.transform.y+")");
+	}
+
+
+
+
+
+		// console.log(d3.select("#ws_content").transform)
 	var content=workspace.append("g")
 		.attr("id","ws_content")
+		.attr("width",width_workspace)
+		.attr("height",height_workspace)
+
+	workspace.append("clipPath")
+		.attr("id","ws-clipPath")
+		.append("rect")
+		.attr("width",width_workspace)
+		.attr("height",height_workspace-height_select)
+	
+	
+		
+	var selected=content.append("g")
+		.attr("id","content-selected")
+
+	var toselect=content.append("g")
+
+		.attr("id","content-toselect")
+		.attr("transform","translate(0,"+height_select+")")
+		// .call(zoom)
+
+		
+		
+		// .call(draged)
+	toselect.append("pattern")
+		.attr("id","ws-pattern")
+		.attr("width",width_workspace)
+		.attr("height",height_workspace-height_select)
+		.attr("viewbox","0,0,"+width_workspace+","+height_workspace-height_select)
+	
+
 
 	// 背景框
 	background.append("rect")
@@ -81,7 +138,8 @@ function initWorkspace(){
 		.attr("height",height_workspace)
 		.attr("stroke",color_bg)
 		.attr("stroke-width",1)
-		.attr("fill","none")
+		.attr("fill","#99ccdd")
+
 
 	background.append("line")
 		.attr("x1",width_rect)
@@ -114,7 +172,7 @@ function initWorkspace(){
 		var newline=[]
 		var x_startline=Math.round(data_handled[i].x_start*width_line),
 			x_endline=Math.round(data_handled[i].x_end*width_line),
-			y_line=Math.round(data_handled[i].y*(height_workspace-height_select)+height_select);
+			y_line=(i+1)*(distance_line+thickness_line);
 
 		newline.push([x_startline,y_line],[x_endline,y_line]);
 		data_handled[i].line=newline;
@@ -127,41 +185,49 @@ function initWorkspace(){
 		.x(function(d){return d[0]})
 		.y(function(d){return d[1]})
 
-	var groups=content.selectAll("g")
+	var groups=toselect.selectAll("g")
 		.data(data_handled)
 		.enter()
 		.append("g")
 		.attr("id",function(d){return "ws_"+d.id})
 
+	// var g_rect=groups.append("g")
+	// 	.attr("transform",function(d){return "translate(2,"+(d.line[0][1]-Math.round(height_rect/2))+")"})
+	// 	.attr("id",function(d){return "wsrect_"+d.id})
 
-	var g_rect=groups.append("g")
-		.attr("transform",function(d){return "translate(2,"+(d.line[0][1]-Math.round(height_rect/2))+")"})
-		.attr("id",function(d){return "wsrect_"+d.id})
+	// // g_rect.append("rect")
+	// // 	.attr("width",width_rect-4)
+	// // 	.attr("height",height_rect)
+	// // 	.attr("stroke",function(d){return d.color})
+	// // 	.attr("stroke-width",1)
+	// // 	.attr("fill","none")
 
-	// g_rect.append("rect")
-	// 	.attr("width",width_rect-4)
-	// 	.attr("height",height_rect)
-	// 	.attr("stroke",function(d){return d.color})
-	// 	.attr("stroke-width",1)
-	// 	.attr("fill","none")
-
-	g_rect.append("text")
-		.text(function(d){return d.id})
-		.attr("dy","1em")
-		.attr("class","text_rect_ws")
-		.attr("font-size","50%")
+	// g_rect.append("text")
+	// 	.text(function(d){return d.id})
+	// 	.attr("dy","1em")
+	// 	.attr("class","text_rect_ws")
+	// 	.attr("font-size","50%")
 
 
 	var wsline=groups.append("g")
 		.attr("transform","translate("+width_rect+",0)")
 		.attr("id",function(d){return "wsline_"+d.id})
+		.attr("fill","url(#ws-pattern")
 
 	wsline.append("path")
+		.attr("clip-path", "url(#ws-clipPath)")
 		.attr("stroke",function(d){return d.color})
 		.attr("stroke-width",thickness_line)
 		.attr("fill","none")
 		.attr('d',function(d){return lineGenerator(d.line)})
-	
+
+	let zoomRect = workspace.append("rect") //设置缩放的区域，一般覆盖整个绘图区
+     .attr("width",width_workspace)
+     .attr("height",height_workspace-height_select)
+     .attr("transform","translate(0,"+height_select+")")
+     .attr("fill","none")
+     .attr("pointer-events","all")
+     .call(zoom);	
 }
 
 function dataToWorkspace(tracklets,frame_current){
