@@ -12,19 +12,12 @@ function initBirdseye(){
 				.domain([-10, 78])
 				.range([y+height-padding.bottom, y+padding.top]);
 
-	var past_duration = 5*24;
-	var future_duration = 5*24;
-
-	var frame = getCurrentFrame();
-	var cur_tracklets = getTrackletsByFrame(tracklets, frame);
-	var cur_path_data = getTrackletsInRange(tracklets, frame, past_duration, future_duration);
-
 	// append the points representing the location of players in birdseye view
 	var circles = d3.select("svg")
 			.append("g")
 			.attr("class", "birdseye_circles")
 			.selectAll(".birdseye_circle")
-			.data(cur_tracklets)
+			.data(current_tracklets)
 			.enter()
 			.append("circle")
 			.attr("class", "birdseye_circle")
@@ -32,14 +25,14 @@ function initBirdseye(){
 				return "birdseye_circle" + String(i);
 			})
 			.attr("cx", function(d){
-				var index = frame-d["start_frame"];
+				var index = getCurrentFrame()-d["start_frame"];
 				// to correct the error of the data;
 				index = d3.min([index, d["boxes"].length-1]);
 				var pos_ab = birdseyeTransition(d["boxes"][index]);
 				return xScale(pos_ab.x);					
 			})
 			.attr("cy", function(d){
-				var index = frame-d["start_frame"];
+				var index = getCurrentFrame()-d["start_frame"];
 				// to correct the error of the data;
 				index = d3.min([index, d["boxes"].length-1]);
 				var pos_ab = birdseyeTransition(d["boxes"][index]);
@@ -47,7 +40,7 @@ function initBirdseye(){
 			})
 			.attr("r", 5)
 			.attr("fill", function(d){
-				return getColorByID(d.id);
+				return d["color"];
 			})
 			.on("mouseover", hoverPlayerCircle)
 			.on("mouseout", unhoverPlayerCircle)
@@ -58,7 +51,7 @@ function initBirdseye(){
 			.append("g")
 			.attr("class", "birdseye_paths")
 			.selectAll(".birdseye_path")
-	 		.data(cur_path_data)
+	 		.data(range_tracklets)
 	 		.attr("class","birdseye_path")
 	 		.enter()
 	 		.append("path")
@@ -67,10 +60,10 @@ function initBirdseye(){
 	 		})
 	 		.attr("d", trackGenerator)
 	 		.attr("fill-opacity", "0")
-	 		.attr("stroke-opacity", "0")
+	 		.attr("stroke-opacity", "1")
 	 		.attr("stroke-width", 2)
 			.attr("stroke", function(d){
-				return getColorByID(d.id);
+				return d["color"];
 			});
 
 	// change the data from the pixels in screen to the real play field
@@ -83,45 +76,6 @@ function initBirdseye(){
 		return {x:x_ab, y:y_ab};
 	}
 
-	function getTrackletsByFrame(data, frame){
-		var current_tracklets = [];
-		for(var i = 0; i < data.length; ++i){
-			if(data[i]["start_frame"] <= frame && frame <= data[i]["end_frame"]){
-				current_tracklets.push(data[i]);
-			}
-		}
-		return current_tracklets;
-	}
-
-	function getTrackletsInRange(data, frame, past_duration, future_duration){
-		var selection = [];
-		for(var i = 0; i < data.length; ++i){
-			if(data[i]["start_frame"] <= frame && frame <= data[i]["end_frame"]){
-				var tracklet = {};
-				// deep copy
-				for(item in data[i]){
-					if(typeof data[i][item] == "object"){
-						tracklet[item] = [];
-					}
-					else{
-						tracklet[item] = data[i][item];
-					}
-				}
-				// fill in the tracklet["boxes"]
-				var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
-				var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
-				// to correct the error of the data;
-				end_index = d3.min([end_index, data[i]["boxes"].length-1]);
-				for(var j = start_index; j < end_index; ++j){
-					var pos = birdseyeTransition(data[i]["boxes"][j]);
-					tracklet["boxes"].push(pos);
-				}
-				selection.push(tracklet);
-			}
-		}
-		return selection;
-	}
-
 	function trackGenerator(d){
 		var lineGenerator = d3.line()
 							.x(function(d){
@@ -130,7 +84,12 @@ function initBirdseye(){
 							.y(function(d){
 								return yScale(d.y);
 							});
-		return lineGenerator(d["boxes"]);
+		var path_data = [];
+		for(var i = 0; i < d["boxes"].length; i++){
+			path_data.push(birdseyeTransition(d["boxes"][i]));
+		}
+		console.log(path_data);
+		return lineGenerator(path_data);
 	}
 
 	function hoverPlayerCircle(d){
