@@ -198,6 +198,7 @@ function init(argument) {
 	var future_duration = 5 * source_video.fps;
 	initVideo();
 	initSVG();
+	initHeader();
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0);

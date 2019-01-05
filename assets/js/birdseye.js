@@ -6,15 +6,27 @@ function initBirdseye(){
 	var padding = {left:30, right:30, top:20, bottom:20};
 
 	var xScale = d3.scaleLinear()
-					.domain([-25, 130])
+					.domain([-17, 107])
 					.range([x, x+width-padding.left-padding.right]);
 	var yScale = d3.scaleLinear()
-				.domain([-10, 78])
+				.domain([-10, 88])
 				.range([y+height-padding.bottom, y+padding.top]);
 
+	var birdseyeLayout = d3.select("svg")
+						.append("g")
+						.attr("id", "birdseye");
+
+	// append the play field image as the background image
+	var image = birdseyeLayout.append("svg:image")
+				.attr("xlink:href", "/resources/PosFlow/img/field.png")
+				.attr("transform", function(){
+					return "translate("+ x + "," + y + ")";
+				})
+            	.attr("width", width)
+            	.attr("height", height);
+
 	// append the points representing the location of players in birdseye view
-	var circles = d3.select("svg")
-			.append("g")
+	var circles = birdseyeLayout.append("g")
 			.attr("class", "birdseye_circles")
 			.selectAll(".birdseye_circle")
 			.data(current_tracklets)
@@ -47,8 +59,7 @@ function initBirdseye(){
 			.on("click", clickPlayerCircle);
 
 	// append the path representing the location of players in birdseye view
-	var path = d3.select("svg")
-			.append("g")
+	var path = birdseyeLayout.append("g")
 			.attr("class", "birdseye_paths")
 			.selectAll(".birdseye_path")
 	 		.data(range_tracklets)
@@ -88,7 +99,6 @@ function initBirdseye(){
 		for(var i = 0; i < d["boxes"].length; i++){
 			path_data.push(birdseyeTransition(d["boxes"][i]));
 		}
-		console.log(path_data);
 		return lineGenerator(path_data);
 	}
 
