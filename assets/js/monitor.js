@@ -255,7 +255,6 @@ function initMain() {
 	players = monitor.append("g")
 		.attr("id", "players")
 
-
 }
 
 function getPlayerTransform(d) {
