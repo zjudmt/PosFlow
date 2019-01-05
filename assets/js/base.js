@@ -26,6 +26,36 @@ function getTrackletsByFrame(data, frame){
 	return current_tracklets;
 }
 
+function getTrackletsInRange(data, frame, past_duration, future_duration){
+var selection = [];
+	for(var i = 0; i < data.length; ++i){
+		if(data[i]["start_frame"] <= frame && frame <= data[i]["end_frame"]){
+			var tracklet = {};
+			// deep copy
+			for(item in data[i]){
+				if(typeof data[i][item] == "object"){
+					tracklet[item] = [];
+				}
+				else{
+					tracklet[item] = data[i][item];
+				}
+			}
+			// set range
+			var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
+			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
+			// to correct the error of the data;
+			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
+			// fill in the tracklet["boxes"]
+			for(var j = start_index; j < end_index; ++j){
+				var pos = data[i]["boxes"][j];
+				tracklet["boxes"].push(pos);
+			}
+			selection.push(tracklet);
+		}
+	}
+	return selection;
+}
+
 function getCurrentFrame(){
 	return Math.floor(d3.select("#video").property("currentTime")*source_video.fps);
 }
@@ -164,11 +194,13 @@ function init(argument) {
 		fps: 25,
 		src: "/resources/PosFlow/tracklets.json",
 	}
+
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
 	frame = 0;
 	initVideo();
 	initSVG();
+	initHeader();
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
