@@ -55,6 +55,7 @@ function initWorkspace(){
 	var height_select=Math.round(height_workspace*0.1)//选择框高度
 
 
+
 	var width_rect=0//id框宽高
 	var height_rect=10
 
@@ -70,9 +71,6 @@ function initWorkspace(){
 		.append("g")
 		.attr("transform","translate("+x_start+","+y_start+")")
 		.attr("id","workspace")
-
-
-
 
 	var background=workspace.append("g")
 		.attr("id","ws_bg")
@@ -142,6 +140,7 @@ function initWorkspace(){
 		.attr("stroke-width",1)
 		.attr("fill","#99ccdd")
 
+
 	background.append("line")
 		.attr("x1",width_rect)
 		.attr("y1",0)
@@ -192,8 +191,6 @@ function initWorkspace(){
 		.append("g")
 		.attr("id",function(d){return "ws_"+d.id})
 
-
-
 	// var g_rect=groups.append("g")
 	// 	.attr("transform",function(d){return "translate(2,"+(d.line[0][1]-Math.round(height_rect/2))+")"})
 	// 	.attr("id",function(d){return "wsrect_"+d.id})
@@ -224,7 +221,6 @@ function initWorkspace(){
 		.attr("fill","none")
 		.attr('d',function(d){return lineGenerator(d.line)})
 
-	
 	let zoomRect = workspace.append("rect") //设置缩放的区域，一般覆盖整个绘图区
      .attr("width",width_workspace)
      .attr("height",height_workspace-height_select)
@@ -244,7 +240,6 @@ function dataToWorkspace(tracklets,frame_current){
 
 	for(var i=0;i<tracklets.length;i++){
 		if(tracklets[i].start_frame<point_end&&tracklets[i].end_frame>point_start){
-			// console.log(tracklets[i])
 			var newobj={}
 			newobj.id=tracklets[i].id;
 			newobj.x_start=Math.max(tracklets[i].start_frame-point_start,0)/(2*frame_range);

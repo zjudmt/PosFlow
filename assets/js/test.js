@@ -1,7 +1,8 @@
-unit = 2
-let str = "123"
- + "456"
- console.log("str:", str)
+
+function test(argument) {
+}
+
+
 // var t00 = d3.timer(function(elapsed) {
 // 	console.log("elapsed: ", elapsed)
 // 	if (elapsed > 5000)
