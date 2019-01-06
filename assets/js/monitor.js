@@ -287,7 +287,7 @@ function updateMonitor() {
 }
 
 function updateMain() {
-	// console.log("updateMain")
+	console.log("updateMain")
 	players = monitor.select("#players")
 		.selectAll("g").data(current_tracklets)
 	players.enter().append("g")
