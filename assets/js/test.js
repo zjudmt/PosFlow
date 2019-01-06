@@ -1,5 +1,17 @@
 
 function test(argument) {
+	var a = new Array()
+	for (var i = 100; i >= 0; i--) {
+		a[i] = i;
+	}
+	function c(a){
+		var c = a.slice(0);
+		for (var i = 10; i >= 0; i--) {
+			c[i] += 1000
+		}
+	}
+	c(a)
+	console.log(a)
 }
 
 

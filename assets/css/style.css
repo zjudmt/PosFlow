@@ -27,6 +27,12 @@ body{
 	background-color: #191b21;
 }
 
+path{
+	fill-opacity: 0;
+	stroke-width: 2;
+	stroke-opacity: 0.5;
+}
+
 .main .rect{
 	cursor: pointer;
 	fill-opacity: 0;
@@ -84,3 +90,4 @@ body{
 #current{
 	stroke-dasharray: 5,5 ;
 }
+

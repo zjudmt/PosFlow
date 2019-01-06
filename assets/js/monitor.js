@@ -310,6 +310,54 @@ function updateMain() {
 			// console.log("300 d: ", d)
 			return "rect_main_" + d.id} )
 
+	function trackGenerator(d){
+		var end_index = frame - d.start_frame;
+		end_index = d3.min([end_index, d.boxes.length - 1]);
+		var start_index = d3.max([frame - d.start_frame - 5 * source_video.fps, 0]);
+		var current_point = {
+			x: vid2x( d.boxes[end_index][0] + d.boxes[end_index][2] / 2 ),
+			y: vid2y( d.boxes[end_index][1] + d.boxes[end_index][3] ),
+		}
+		var lineGenerator = d3.line()
+							.x(function(d){
+								return d.x ;
+							} )
+							.y(function(d){
+								return d.y ;
+							} );
+		var path_data = [];
+		for (var i = start_index; i < end_index; i++) {
+			var track_point = {
+				x: vid2x(d.boxes[i][0] + d.boxes[i][2]/2) - current_point.x ,
+				y: vid2y(d.boxes[i][1] + d.boxes[i][3]) - current_point.y ,
+			}
+			path_data.push(track_point);
+		}
+		return lineGenerator(path_data);
+	}
+
+	function pathBasepoint(d) {
+		var index = frame - d.start_frame;
+		index = d3.min([index, d.boxes.length - 1]);
+		var current_point = {
+			x: vid2x(d.boxes[index][2] / 2 ),
+			y: vid2y(d.boxes[index][3] ),
+		}
+		var str = "translate(" + current_point.x + ","
+		+ current_point.y + ")";
+		return str;
+	}
+
+	players.selectAll("path").remove()
+
+	tracks = players.append("path")
+		.attr("transform", pathBasepoint)
+		.attr("d", trackGenerator)
+		.classed("track player", true)
+		.attr("stroke", function(d){
+			return d.color});
+
+
 }
 
 
