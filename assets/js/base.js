@@ -197,6 +197,7 @@ function init(argument) {
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
 	frame = 0;
+	test();
 	initVideo();
 	initSVG();
 	initHeader();
@@ -204,7 +205,6 @@ function init(argument) {
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
 		range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
-		// test();
 		initMonitor();
 		initWorkspace();
 		initBirdseye();
