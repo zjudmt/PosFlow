@@ -38,6 +38,8 @@ function initWorkspace(){
 	var thickness_line=10 //线条宽度
 	var distance_line=5 //线条之间距离
 	
+	y_drag=0//滚动条高度
+
 	// 选取前后五秒出现的轨迹
 	// var range_tracklets=dataToWorkspace(tracklets,frame)
 	// var range_tracklets=getTrackletsInRange(tracklets,frame, past_duration, future_duration)
@@ -45,8 +47,8 @@ function initWorkspace(){
 
 	workspace=d3.select("svg")
 		.append("g")
-		.attr("transform","translate("+x_start+","+y_start+")")
 		.attr("id","workspace")
+		.attr("transform","translate("+x_start+","+y_start+")")
 
 	var background=workspace.append("g")
 		.attr("id","ws_bg")
@@ -68,6 +70,7 @@ function initWorkspace(){
 	workspace.append("clipPath")
 		.attr("id","ws-clipPath")
 		.append("rect")
+		// .attr("transform","translate(0,"+height_select+")")
 		.attr("width",width_workspace)
 		.attr("height",height_workspace-height_select)
 	
@@ -110,7 +113,7 @@ function initWorkspace(){
 
 
 
-	var zoom = d3.zoom()
+	zoom = d3.zoom()
 				// .scaleExtent([1, 10])
 				// .translateExtent([[0,0], [100, 100]])
 				.extent([[0,0],[10,10]])
@@ -119,15 +122,14 @@ function initWorkspace(){
 
 	function zoomed() {
 		console.log(d3.event.transform)
-		d3.select("#content-toselect").attr("transform", "translate(0,"+d3.event.transform.y+")");
+		var y_transform=d3.event.transform.y
+		if(!(y_drag>=0&&y_transform>0||
+		y_drag<=(-range_trackletsWsVer.length*(thickness_line+distance_line)+height_workspace-height_select)&&y_transform<0))//设置滑动范围
+			y_drag+=d3.event.transform.y
+		
 	}
-	let zoomRect = content.append("g").append("rect") //设置缩放的区域，一般覆盖整个绘图区
-     .attr("width",width_workspace)
-     .attr("height",height_workspace-height_select)
-     .attr("transform","translate(0,"+height_select+")")
-     .attr("fill","none")
-     .attr("pointer-events","all")
-     .call(zoom);
+	
+    
 		
 
 	
@@ -173,6 +175,7 @@ function updateWorkspace(){
 		.attr("id","content-toselect")
 		.attr("transform","translate(0,"+height_select+")")
 
+
 	var groups=toselect.selectAll("g")
 		.data(range_trackletsWsVer)
 		.enter()
@@ -189,11 +192,17 @@ function updateWorkspace(){
 	wsline.append("line")
 		.attr("x1",function(d){return width_workspace*(d.start_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("x2",function(d){return width_workspace*(d.end_frame-(frame-past_duration))/(past_duration+future_duration)})
-		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+height_select})
-		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+height_select})
-		// .attr("clip-path", "url(#ws-clipPath)")
+		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
+		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
+		.attr("clip-path", "url(#ws-clipPath)")
 		.attr("stroke",function(d){return d.color})
 		.attr("stroke-width",thickness_line)
 		
-		
+	let zoomRect = content.append("g").append("rect") //设置缩放的区域，一般覆盖整个绘图区
+     .attr("width",width_workspace)
+     .attr("height",height_workspace-height_select)
+     .attr("transform","translate(0,"+height_select+")")
+     .attr("fill","none")
+     .attr("pointer-events","all")	
+     .call(zoom)
 }
