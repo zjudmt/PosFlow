@@ -1,99 +1,3 @@
-function getColorByID(ID){
-	let res = md5(ID)
-	let color = "#"+ res.substr(0,6);
-	return color;
-}
-
-function addLoadEvent(func) {
-	var oldonload = window.onload;
-	if (typeof window.onload != 'function') {
-		window.onload = func;
-	} else {
-		window.onload = function() {
-			oldonload();
-			func();
-		}
-	}
-}
-
-function getTrackletsByFrame(data, frame){
-	var current_tracklets = [];
-	for(var i = 0; i < data.length; ++i){
-		if(data[i]["start_frame"] <= frame && frame <= data[i]["end_frame"]){
-			current_tracklets.push(data[i]);
-		}
-	}
-	return current_tracklets;
-}
-
-function getTrackletsInRange(data, frame, past_duration, future_duration){
-var selection = [];
-	for(var i = 0; i < data.length; ++i){
-		if(data[i]["start_frame"] <= frame && frame <= data[i]["end_frame"]){
-			var tracklet = {};
-			// deep copy
-			for(item in data[i]){
-				if(typeof data[i][item] == "object"){
-					tracklet[item] = [];
-				}
-				else{
-					tracklet[item] = data[i][item];
-				}
-			}
-			// set range
-			var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
-			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
-			// to correct the error of the data;
-			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
-			// fill in the tracklet["boxes"]
-			for(var j = start_index; j < end_index; ++j){
-				var pos = data[i]["boxes"][j];
-				tracklet["boxes"].push(pos);
-			}
-			selection.push(tracklet);
-		}
-	}
-	return selection;
-}
-
-function getTrackletsInRangeWsVer(data, frame, past_duration, future_duration){
-var selection = [];
-	for(var i = 0; i < data.length; ++i){
-		if(data[i]["start_frame"] <= frame+future_duration && frame-past_duration <= data[i]["end_frame"]){
-			var tracklet = {};
-			// deep copy
-			for(item in data[i]){
-				if(typeof data[i][item] == "object"){
-					tracklet[item] = [];
-				}
-				else{
-					tracklet[item] = data[i][item];
-				}
-			}
-			// set range
-			var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
-			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
-			// to correct the error of the data;
-			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
-
-			tracklet["start_frame"]=start_index+data[i]["start_frame"];
-			tracklet["end_frame"]=end_index+data[i]["start_frame"];
-			// fill in the tracklet["boxes"]
-			for(var j = start_index; j < end_index; ++j){
-				var pos = data[i]["boxes"][j];
-				tracklet["boxes"].push(pos);
-			}
-			selection.push(tracklet);
-		}
-	}
-	return selection;
-}
-
-
-function getCurrentFrame(){
-	return Math.floor(d3.select("#video").property("currentTime")*source_video.fps);
-}
-
 // 创建layout 全局变量，让各模块能据此初始化自己的视图
 function initLayout(argument) {
 	viewport = {
@@ -124,10 +28,10 @@ function initLayout(argument) {
 					h: unit,
 				},{
 					name: "void",
-					h: unit * 5,
+					h: unit * 2,
 				},{
 					name: "monitor",
-					h: unit * 11,
+					h: unit * 13,
 					main: {
 						h: unit * 10,
 					},
@@ -141,13 +45,13 @@ function initLayout(argument) {
 					col: [
 							{
 								name: "blank",
-								w: unit * 16,
+								w: unit * 0,
 							},{				
 								name: "birdseye",
-								w: unit * 16,
+								w: unit * 20,
 							},{				
 								name: "workspace",
-								w: unit * 16,
+								w: unit * 28,
 							}
 						]
 					}
@@ -208,11 +112,20 @@ function initData(data){
 		"selected": "selected",
 		"conflicted": "conflicted"
 	};
+	console.log("initData")
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
 		data[i]["color"] =  getColorByID(data[i].id);
 	}
 	return data;
+}
+
+function initDispatch() {
+	dispatch = d3.dispatch("refresh");
+	console.log("initDispatch")
+	dispatch.on("refresh", function(detail){
+		refreshMonitor(detail);
+	});
 }
 
 function init(argument) {
@@ -231,64 +144,45 @@ function init(argument) {
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
 	frame = 0;
+	map = [];
+	selected = [];
 	test();
 	initVideo();
 	initSVG();
 	initHeader();
+	initDispatch();
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
-		range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
-		range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
+		// range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
+		// range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
 		initMonitor();
-		initWorkspace();
-		initBirdseye();
+		// initWorkspace();
+		// initBirdseye();
 		timer_update = d3.timer(update);
 	})
 }
 
-function getTrackletsInRange(data, frame, past_duration, future_duration){
-	var selection = [];
-	for(var i = 0; i < data.length; ++i){
-		if(data[i]["start_frame"] <= frame && frame <= data[i]["end_frame"]){
-			var tracklet = {};
-			// deep copy
-			for(item in data[i]){
-				if(typeof data[i][item] == "object"){
-					tracklet[item] = [];
-				}
-				else{
-					tracklet[item] = data[i][item];
-				}
-			}
-			// set range
-			var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
-			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
-			// to correct the error of the data;
-			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
-			tracklet["start_frame"] = data[i]["start_frame"] + start_index;
-			tracklet["end_frame"] = data[i]["start_frame"] + end_index-1;			
-			// fill in the tracklet["boxes"]
-			for(var j = start_index; j < end_index; ++j){
-				var pos = data[i]["boxes"][j];
-				tracklet["boxes"].push(pos);
-			}
-			selection.push(tracklet);
-		}
-	}
-	return selection;
-}
-
-
 function update() {
+	map = [];
+	// selected = [];
 	frame = getCurrentFrame();
+	previous = current_tracklets;
 	current_tracklets = getTrackletsByFrame(tracklets, frame);
-	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
-	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
+	if (! previous.equals(current_tracklets) ){
+		if(previous.length > current_tracklets.length)
+			dispatch.call("refresh", this, {exit: true})
+		else if ( previous.length < current_tracklets.length )
+			dispatch.call("refresh", this, {enter: true})
+		else
+			dispatch.call("refresh", this, {})
+	}
+	// range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
+	// range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
 
-	updateWorkspace();
-	updateMonitor();
-	updateBirdseye();
+	// updateWorkspace();
+	// updateMonitor();
+	// updateBirdseye();
 }
 
 
@@ -339,15 +233,6 @@ function initVideo(){
 
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
 
-}
-
-function getTrackletById(id){
-	for(var i=0;i<tracklets.length;i++){
-		if(tracklets[i].id==id){
-			tracklets[i].position=i;//用于标记位置以便删除
-			return tracklets[i]
-		}
-	}
 }
 
 function merge(id1,id2){
