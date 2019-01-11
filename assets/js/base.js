@@ -1,3 +1,4 @@
+
 // 创建layout 全局变量，让各模块能据此初始化自己的视图
 function initLayout(argument) {
 	viewport = {
@@ -146,11 +147,11 @@ function init(argument) {
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
-		// range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
-		// range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
+		range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
+		range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
 		initMonitor();
-		// initWorkspace();
-		// initBirdseye();
+		initWorkspace();
+		initBirdseye();
 		timer_update = d3.timer(update);
 	})
 }
@@ -161,12 +162,12 @@ function update() {
 	frame = getCurrentFrame();
 	previous = current_tracklets;
 	current_tracklets = getTrackletsByFrame(tracklets, frame);
-	// range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
-	// range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
+	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
+	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
 
-	// updateWorkspace();
+	updateWorkspace();
 	// updateMonitor();
-	// updateBirdseye();
+	updateBirdseye();
 }
 
 
