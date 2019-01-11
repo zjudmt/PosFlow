@@ -60,7 +60,6 @@ path{
 }
 
 #players .conflicted rect{
-	stroke: #7a7374;
 	cursor: not-allowed;
 }
 
@@ -126,3 +125,18 @@ path{
 	opacity: 0.7;
 }
 
+#birdseye_paths path.selected{
+	opacity: 1;
+}
+
+#birdseye_paths path.hover{
+	opacity: 0.5;
+}
+
+#birdseye_paths path.default{
+	opacity: 0;
+}
+
+#birdseye_paths path.conflicted{
+	opacity: 0;
+}
