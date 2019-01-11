@@ -21,7 +21,7 @@ function initWorkspace(){
 
 	var x_start=layout.workspace.x//workspace起始位置
 	var y_start=layout.workspace.y
-	var width_workspace=layout.workspace.w//ws宽度
+	var width_workspace=layout.workspace.w-unit//ws宽度
 	var height_workspace=layout.workspace.h//ws高度
 	
 	var img_list=["/resources/PosFlow/img/chain.png",
@@ -96,6 +96,12 @@ function initWorkspace(){
 		// .attr("transform","translate(0,"+height_select+")")
 		.attr("width",width_graph)
 		.attr("height",height_workspace-height_select)
+
+	workspace.append("clipPath")
+		.attr("id","ws-clipPath2")
+		.append("rect")
+		.attr("width",width_graph)
+		.attr("height",height_select)
 
 	// 背景框
 	background.append("rect")
@@ -185,7 +191,7 @@ function updateWorkspace(){
 
 	var x_start=layout.workspace.x//workspace起始位置
 	var y_start=layout.workspace.y
-	var width_workspace=layout.workspace.w//ws宽度
+	var width_workspace=layout.workspace.w-unit//ws宽度
 	var height_workspace=layout.workspace.h//ws高度
 	var img_list=["/resources/PosFlow/img/chain.png",
 	"/resources/PosFlow/img/chain-broken.png",
@@ -213,47 +219,63 @@ function updateWorkspace(){
 
 
 
-	var selected=d3.select("#content-selected")
-	var toselect=d3.select("#content-toselect")
+	var area_selected=d3.select("#content-selected")
+	var area_toselect=d3.select("#content-toselect")
 
 	
 
 
 
-	// var sgroups=selected.selectAll("line")
-	// 	.data(selected)
+	var sgroups=area_selected.selectAll("line")
+		.data(selected.sort(function(a,b){return a.start_frame-b.start_frame}))
 
-	// sgroups.exit().remove()
+	sgroups.exit().remove()
 		
-	// sgroups.enter().append("line")
+	sgroups.enter().append("line")
 
-	// sgroups.attr("id",function(d){return "se_"+d.id})
-	// 	.sort(function(a,b){return a.start_frame-b.start_frame})
+	sgroups.attr("id",function(d){return "se_"+d.id})
+		.attr("x1",function(d){return width_graph*Math.max((d.start_frame-(frame-past_duration))/(past_duration+future_duration),0)})
+		.attr("x2",function(d){return width_graph*Math.min((d.end_frame-(frame-past_duration))/(past_duration+future_duration),1)})
+		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
+		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
+		.attr("clip-path","url(#ws-clipPath2)")
+		.attr("stroke",function(d){return d.color})
+		.attr("stroke-width",thickness_line)
+		.on("click",selectTracklet)
 
-	var tgroups=toselect.selectAll("line")
-		.data(range_trackletsWsVer)
+
+
+	var tgroups=area_toselect.selectAll("line")
+	.data(range_trackletsWsVer.sort(function(a,b){
+		if(a.status=="conflicted"&&b.status!="conflicted")
+			return 1;
+		else if(b.status=="conflicted"&&a.status!="conflicted")
+			return -1;
+		else
+			return a.start_frame-b.start_frame;
+	}))
+
 
 	tgroups.exit().remove()
 	tgroups.enter().append("line")
 		
-	tgroups.attr("id",function(d){return "ts_"+d.id})
+	tgroups
+		.attr("id",function(d){return "ts_"+d.id})
 		.attr("x1",function(d){return width_graph*(d.start_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("x2",function(d){return width_graph*(d.end_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
 		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
 		.attr("clip-path","url(#ws-clipPath)")
-		.attr("stroke",function(d){return d.color})
-		.attr("stroke-width",thickness_line)
-		.on("click",function(){console.log("hhh")})
-		
-		.sort(function(a,b){
-			if(a.status=="conflicted"&&b.status=="default")
-				return 1;
-			else if(a.status=="default"&&b.status=="conflicted")
-				return -1;
+		.attr("stroke",function(d){
+			if(d.status == "conflicted")
+				return "#7a7374";
 			else
-				return a.start_frame-b.start_frame
-		})
+				return d.color;})
+		.attr("stroke-width",thickness_line)
+		.on("click",selectTracklet)
+		.on("mouseover",function(d){console.log("over"+d.id);setStatus(d.id, "hover")})
+		.on("mouseout",function(d){console.log("outof"+d.id); setStatus(d.id, "default")})
+		
 
 	
 	// sgroups.append("line")
