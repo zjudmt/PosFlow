@@ -1,3 +1,4 @@
+
 // 创建layout 全局变量，让各模块能据此初始化自己的视图
 function initLayout(argument) {
 	viewport = {
@@ -169,6 +170,7 @@ function update() {
 	frame = getCurrentFrame();
 	previous = current_tracklets;
 	current_tracklets = getTrackletsByFrame(tracklets, frame);
+
 	if (! previous.equals(current_tracklets) ){
 		if(previous.length > current_tracklets.length)
 			dispatch.call("refresh", this, {exit: true})
@@ -179,6 +181,7 @@ function update() {
 	}
 	// range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
 	// range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
+
 
 	// updateWorkspace();
 	// updateMonitor();
