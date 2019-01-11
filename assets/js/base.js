@@ -57,9 +57,9 @@ var selection = [];
 }
 
 function getTrackletsInRangeWsVer(data, frame, past_duration, future_duration){
-var selection = [];
+	var selection = [];
 	for(var i = 0; i < data.length; ++i){
-		if(data[i]["start_frame"] <= frame+future_duration && frame-past_duration <= data[i]["end_frame"]){
+		if(data[i]["start_frame"] <= frame+future_duration && frame-past_duration <= data[i]["end_frame"]&&data[i].status!="selected"){
 			var tracklet = {};
 			// deep copy
 			for(item in data[i]){
@@ -89,11 +89,39 @@ var selection = [];
 	return selection;
 }
 
+// function getSelectedTracklets(data){
+// 	var selection=[];
+// 	for(var i=0;i<data.length;i++)
+// 		if(data[i].status=="selected"){
+// 			selection.push(data[i])
+// 			// console.log(selection)
+// 		}
+// 	return selection
+// }
+
+
 
 function getCurrentFrame(){
 	return Math.floor(d3.select("#video").property("currentTime")*source_video.fps);
 }
 
+function selectTracklet(id){
+	var tracklet_selected={}
+
+	for(var i=0;i<=tracklets.length;i++){
+		if(tracklets[i].id==id)
+			tracklets[i].status="selected"
+			tracklet_selected=tracklets[i]
+			break;
+	}
+
+	for(var i=0;i<=tracklets.length;i++){
+		if(!(tracklets[i].start_frame>tracklet_selected.end_frame||
+			tracklets[i].end_frame<tracklet_selected.start_frame))
+			tracklets[i].status="conflicted"
+
+	}
+}
 // 创建layout 全局变量，让各模块能据此初始化自己的视图
 function initLayout(argument) {
 	viewport = {
@@ -285,6 +313,7 @@ function update() {
 	current_tracklets = getTrackletsByFrame(tracklets, frame);
 	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
 	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
+	
 
 	updateWorkspace();
 	updateMonitor();
