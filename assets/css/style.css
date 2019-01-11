@@ -48,7 +48,7 @@ path{
 }
 
 #players .default{
-	stroke-opacity: 0.3;
+	stroke-opacity: 0.5;
 }
 
 #players .default path{
@@ -60,7 +60,6 @@ path{
 }
 
 #players .conflicted rect{
-	stroke: #7a7374;
 	cursor: not-allowed;
 }
 
