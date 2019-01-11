@@ -56,6 +56,7 @@ function updateBirdseye(){
 			var index = getCurrentFrame()-d["start_frame"];
 			// to correct the error of the data;
 			index = d3.min([index, d["boxes"].length-1]);
+			index = d3.max([0, index]);
 			var pos_ab = birdseyeTransition(d["boxes"][index]);
 			return xScale(pos_ab.x);					
 		})
@@ -63,6 +64,7 @@ function updateBirdseye(){
 			var index = getCurrentFrame()-d["start_frame"];
 			// to correct the error of the data;
 			index = d3.min([index, d["boxes"].length-1]);
+			index = d3.max([0, index]);
 			var pos_ab = birdseyeTransition(d["boxes"][index]);
 			return yScale(pos_ab.y);
 		})
