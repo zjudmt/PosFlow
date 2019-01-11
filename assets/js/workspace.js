@@ -234,7 +234,6 @@ function updateWorkspace(){
 		.data(range_trackletsWsVer)
 
 	tgroups.exit().remove()
-
 	tgroups.enter().append("line")
 		
 	tgroups.attr("id",function(d){return "ts_"+d.id})
