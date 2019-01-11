@@ -69,7 +69,7 @@ function getTrackletsByFrame(data, frame){
 				// console.log("max_start", max_start, "min_end", min_end)
 			}
 		}
-		if (flag_conflicted)
+		if (flag_conflicted||(selected.length==2&&data[i].status!="selected"))
 			data[i].status = "conflicted";
 		else if(data[i].status == "conflicted")
 			data[i].status = "default";
@@ -114,7 +114,7 @@ var selection = [];
 function getTrackletsInRangeWsVer(data, frame, past_duration, future_duration){
 var selection = [];
 	for(var i = 0; i < data.length; ++i){
-		if(data[i]["start_frame"] <= frame+future_duration && frame-past_duration <= data[i]["end_frame"]){
+		if(data[i]["start_frame"] <= frame+future_duration && frame-past_duration <= data[i]["end_frame"]&&data[i].status!="selected"){
 			var tracklet = {};
 			// deep copy
 			for(item in data[i]){

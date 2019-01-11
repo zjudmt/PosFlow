@@ -155,11 +155,11 @@ function init(argument) {
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
-		// range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
-		// range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
+		range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
+		range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
 		initMonitor();
-		// initWorkspace();
-		// initBirdseye();
+		initWorkspace();
+		initBirdseye();
 		timer_update = d3.timer(update);
 	})
 }
@@ -179,13 +179,13 @@ function update() {
 		else
 			dispatch.call("refresh", this, {})
 	}
-	// range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
-	// range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
+	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
+	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
 
 
-	// updateWorkspace();
+	updateWorkspace();
 	// updateMonitor();
-	// updateBirdseye();
+	updateBirdseye();
 }
 
 
