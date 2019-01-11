@@ -121,13 +121,6 @@ function initData(data){
 	return data;
 }
 
-function initDispatch() {
-	dispatch = d3.dispatch("refresh");
-	console.log("initDispatch")
-	dispatch.on("refresh", function(detail){
-		refreshMonitor(detail);
-	});
-}
 
 function init(argument) {
 	initLayout();
@@ -151,7 +144,6 @@ function init(argument) {
 	initVideo();
 	initSVG();
 	initHeader();
-	initDispatch();
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
@@ -170,18 +162,8 @@ function update() {
 	frame = getCurrentFrame();
 	previous = current_tracklets;
 	current_tracklets = getTrackletsByFrame(tracklets, frame);
-
-	if (! previous.equals(current_tracklets) ){
-		if(previous.length > current_tracklets.length)
-			dispatch.call("refresh", this, {exit: true})
-		else if ( previous.length < current_tracklets.length )
-			dispatch.call("refresh", this, {enter: true})
-		else
-			dispatch.call("refresh", this, {})
-	}
 	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
 	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
-
 
 	updateWorkspace();
 	// updateMonitor();

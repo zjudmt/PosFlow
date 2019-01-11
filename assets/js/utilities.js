@@ -31,8 +31,6 @@ function selectTracklet(d){
 				selected.splice(i,1);
 		}
 		console.log("deselectTracklet: ", selected)
-		// update()
-		// dispatch.call("refresh", this, {selected: "less"});
 	}
 	else{
 		if(cur_status == "conflicted")
@@ -40,8 +38,6 @@ function selectTracklet(d){
 		tracklets[index].status = "selected";
 		selected.push(d);
 		console.log("selectTracklet: ", selected)
-		// update()
-		// dispatch.call("refresh", this, {selected: "more"});
 	}
 }
 
@@ -180,3 +176,4 @@ Array.prototype.equals = function (array) {
 }
 // Hide method from for-in loops
 Object.defineProperty(Array.prototype, "equals", {enumerable: false});
+
