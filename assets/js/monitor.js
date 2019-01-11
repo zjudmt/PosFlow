@@ -10,14 +10,214 @@ function initMonitor() {
 				return str
 			})
 
+	flag_canplaythrough = false;
 	var video_obj = document.getElementById("video")
-	video_obj.addEventListener("canplaythrough", function(){
-		source_video.duration = this.duration;
-		source_video.seconds = Math.round(this.duration);
-		initControls();
-		initMain();
-	})
+	if( !video_obj.duration ){
+		video_obj.addEventListener("canplaythrough", function(){
+			doInitMonitor();
+		})
+	}
+	else{
+		doInitMonitor();
+	}
 }
+
+function doInitMonitor() {
+	if(!flag_canplaythrough){
+		var video_obj = document.getElementById("video")
+		source_video.duration = video_obj.duration;
+		source_video.seconds = Math.round(video_obj.duration);
+		initMain();
+		initControls();
+		timer_Moniter = d3.timer(updateMonitor);
+		flag_canplaythrough = true;
+	}
+}
+
+
+
+function initMain() {
+	console.log("initMain")
+	var layout_main = layout.monitor.main
+
+	vid2x = d3.scaleLinear()
+		.domain([0, source_video.w])
+		.range([layout_main.x, layout_main.x + layout_main.w])
+
+	vid2y = d3.scaleLinear()
+		.domain([0, source_video.h])
+		.range([layout_main.y, layout_main.y + layout_main.h])
+
+	vid2w = d3.scaleLinear()
+		.domain([0, source_video.w])
+		.range([0, layout_main.w])
+
+	vid2h = d3.scaleLinear()
+		.domain([0, source_video.h])
+		.range([0, layout_main.h])
+
+	main = monitor.append("g")
+		.attr("id", "players")
+
+	players = main
+		.selectAll("g").data(current_tracklets)
+		.enter().append("g")
+		.attr("class", function(d){
+			return d.status + " main";
+		})
+
+	rects = players.append("rect")
+		.on("click", selectTracklet)
+		.on("mouseover", function(d){
+			setStatus(d.id, "hover")
+		})
+		.on("mouseout", function(d){
+			setStatus(d.id, "default")
+		})
+
+	tracks = players.append("path")
+
+}
+
+function refreshMonitor(argument) {
+	refreshMain(argument);
+}
+
+function refreshMain(argument) {
+	main = d3.select("#players")
+	players = main
+		.selectAll("g.main").data(current_tracklets)
+	if ( argument.exit ==  true ){
+		// console.log("exit:", players.exit())
+		players.exit().remove();
+	}
+	else if ( argument.enter == true ){
+		new_players =  players.enter().append("g")
+
+		new_rects = new_players.append("rect")
+		
+		new_tracks = new_players.append("path")
+	}
+
+	players
+		.attr("class", function(d){
+			return d.status + " main";
+		})
+
+	rects = players.select("rect")
+		.on("click", selectTracklet)
+		.on("mouseover", function(d){
+			setStatus(d.id, "hover")
+		})
+		.on("mouseout", function(d){
+			setStatus(d.id, "default")
+		})
+}
+
+function updateMain(){
+
+	// console.log("updateMain:", frame)
+	players = main.selectAll("g.main").attr("transform", getPlayerTransform)
+		.attr("class", function(d){
+			return d.status + " main";
+		})
+
+	players.select("rect").attr("width", getPlayerRectWidth)
+		.attr("height", getPlayerRectHeight)
+		.attr("stroke", function(d){
+			// console.log(d.status)
+			if(d.status == "conflicted")
+				return "#7a7374";
+			else
+				return d.color;
+		})
+
+	players.select("path").attr("transform", pathBasepoint)
+		.attr("d", trackGenerator)
+		.attr("stroke", function(d){
+			if(d.status == "conflicted")
+				return "#7a7374";
+			else
+				return d.color;
+		});
+
+}
+
+
+function getPlayerTransform(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	index = d3.max([0, index])
+	var pos = d["boxes"][index];
+	var str = "translate(" + vid2x(pos[0]) +
+	" , " + vid2y(pos[1]) + ")";
+	return str;
+}
+
+function getPlayerRectWidth(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	index = d3.max([0, index])
+	var pos = d["boxes"][index];
+	var w = vid2w(pos[2])
+	// console.log(w);
+	return w;
+}
+
+function getPlayerRectHeight(d) {
+	var index = frame-d["start_frame"];
+	index = d3.min([index, d["boxes"].length-1]);
+	index = d3.max([0, index])
+	var pos = d["boxes"][index];
+	var h = vid2h(pos[3])
+	// console.log(d, h);
+	return h;
+}
+
+function trackGenerator(d){
+	var end_index = frame - d.start_frame;
+	end_index = d3.min([end_index, d.boxes.length - 1]);
+	var start_index = d3.max([0, frame - d.start_frame - 5 * source_video.fps]);
+	var current_point = {
+		x: vid2x( d.boxes[end_index][0] + d.boxes[end_index][2] / 2 ),
+		y: vid2y( d.boxes[end_index][1] + d.boxes[end_index][3] ),
+	}
+	// console.log("start_index", start_index, "end_index:", end_index)
+	var lineGenerator = d3.line()
+						.x(function(d){
+							return d.x ;
+						} )
+						.y(function(d){
+							return d.y ;
+						} );
+	var path_data = [];
+	for (var i = start_index; i < end_index; i++) {
+		var track_point = {
+			x: vid2x(d.boxes[i][0] + d.boxes[i][2]/2) - current_point.x ,
+			y: vid2y(d.boxes[i][1] + d.boxes[i][3]) - current_point.y ,
+		}
+		path_data.push(track_point);
+	}
+	// console.log("path_data:", path_data);
+	return lineGenerator(path_data);
+}
+
+function pathBasepoint(d) {
+	var index = frame - d.start_frame;
+	index = d3.min([index, d.boxes.length - 1]);
+	var current_point = {
+		x: vid2x(d.boxes[index][2] / 2 ),
+		y: vid2y(d.boxes[index][3] ),
+	}
+	var str = "translate(" + current_point.x + ","
+	+ current_point.y + ")";
+	return str;
+}
+
+function updateMonitor() {
+	updateMain();
+}
+
 
 function getTimeText(current_time){
 	let t = Math.floor(current_time);
@@ -211,11 +411,13 @@ function initControls(){
 			flag_control = false;
 		newtime = x2time(mouse[0])
 		video.property("currentTime",newtime);
+		// update()
 		// controls_data.timebox.current_time = newtime;
 	}
 
 	function mouseup(){
 		flag_control = false;
+		update()
 	}
 
 	function clickPlay(){
@@ -226,138 +428,5 @@ function initControls(){
 			video._groups[0][0].pause();
 		}
 	}
-
 }
-
-function initMain() {
-	var layout_main = layout.monitor.main
-
-	vid2x = d3.scaleLinear()
-		.domain([0, source_video.w])
-		.range([layout_main.x, layout_main.x + layout_main.w])
-
-	vid2y = d3.scaleLinear()
-		.domain([0, source_video.h])
-		.range([layout_main.y, layout_main.y + layout_main.h])
-
-	vid2w = d3.scaleLinear()
-		.domain([0, source_video.w])
-		.range([0, layout_main.w])
-
-	vid2h = d3.scaleLinear()
-		.domain([0, source_video.h])
-		.range([0, layout_main.h])
-
-
-	players = monitor.append("g")
-		.attr("id", "players")
-
-}
-
-function getPlayerTransform(d) {
-	var index = frame-d["start_frame"];
-	index = d3.min([index, d["boxes"].length-1]);
-	var pos = d["boxes"][index];
-	var str = "translate(" + vid2x(pos[0]) +
-	" , " + vid2y(pos[1]) + ")";
-	// console.log(d.id, str);
-	return str;
-}
-
-function getPlayerRectWidth(d) {
-	var index = frame-d["start_frame"];
-	index = d3.min([index, d["boxes"].length-1]);
-	var pos = d["boxes"][index];
-	var w = vid2w(pos[2])
-	// console.log(w);
-	return w;
-}
-
-function getPlayerRectHeight(d) {
-	var index = frame-d["start_frame"];
-	index = d3.min([index, d["boxes"].length-1]);
-	var pos = d["boxes"][index];
-	var h = vid2h(pos[3])
-	// console.log(d, h);
-	return h;
-}
-
-function updateMonitor() {
-	updateMain();
-}
-
-function updateMain() {
-	console.log("updateMain")
-	players = monitor.select("#players")
-		.selectAll("g").data(current_tracklets)
-	players.enter().append("g")
-	players.exit().remove();
-
-	players.attr("transform", getPlayerTransform)
-		.classed("main player", true)
-		.attr("id", function(d) {
-			return "main_" + d.id;
-		})
-
-	players.selectAll("rect").remove();
-
-	rects = players.append("rect")
-		.attr("width", getPlayerRectWidth)
-		.attr("height", getPlayerRectHeight)
-		.attr("stroke", function(d){return d.color})
-		.classed("rect default", true)
-		.attr("id", function(d){
-			// console.log("300 d: ", d)
-			return "rect_main_" + d.id} )
-
-	function trackGenerator(d){
-		var end_index = frame - d.start_frame;
-		end_index = d3.min([end_index, d.boxes.length - 1]);
-		var start_index = d3.max([frame - d.start_frame - 5 * source_video.fps, 0]);
-		var current_point = {
-			x: vid2x( d.boxes[end_index][0] + d.boxes[end_index][2] / 2 ),
-			y: vid2y( d.boxes[end_index][1] + d.boxes[end_index][3] ),
-		}
-		var lineGenerator = d3.line()
-							.x(function(d){
-								return d.x ;
-							} )
-							.y(function(d){
-								return d.y ;
-							} );
-		var path_data = [];
-		for (var i = start_index; i < end_index; i++) {
-			var track_point = {
-				x: vid2x(d.boxes[i][0] + d.boxes[i][2]/2) - current_point.x ,
-				y: vid2y(d.boxes[i][1] + d.boxes[i][3]) - current_point.y ,
-			}
-			path_data.push(track_point);
-		}
-		return lineGenerator(path_data);
-	}
-
-	function pathBasepoint(d) {
-		var index = frame - d.start_frame;
-		index = d3.min([index, d.boxes.length - 1]);
-		var current_point = {
-			x: vid2x(d.boxes[index][2] / 2 ),
-			y: vid2y(d.boxes[index][3] ),
-		}
-		var str = "translate(" + current_point.x + ","
-		+ current_point.y + ")";
-		return str;
-	}
-
-	players.selectAll("path").remove()
-
-	tracks = players.append("path")
-		.attr("transform", pathBasepoint)
-		.attr("d", trackGenerator)
-		.classed("track player", true)
-		.attr("stroke", function(d){
-			return d.color});
-
-
-}
-
 

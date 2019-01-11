@@ -11,7 +11,6 @@ function test(argument) {
 		}
 	}
 	c(a)
-	console.log(a)
 }
 
 

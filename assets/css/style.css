@@ -33,12 +33,39 @@ path{
 	stroke-opacity: 0.5;
 }
 
-.main .rect{
+
+
+#players rect{
 	cursor: pointer;
 	fill-opacity: 0;
 	stroke-width: 2px;
 	stroke-linejoin: round; 
+	/*stroke-opacity: 0.1;*/
+}
+
+#players .hover{
+	stroke-opacity: 0.9;
+}
+
+#players .default{
+	stroke-opacity: 0.3;
+}
+
+#players .default path{
+	stroke-opacity: 0;
+}
+
+#players .selected{
 	stroke-opacity: 1;
+}
+
+#players .conflicted rect{
+	stroke: #7a7374;
+	cursor: not-allowed;
+}
+
+#players .conflicted path{
+	stroke-opacity: 0;
 }
 
 #controls rect{
@@ -66,6 +93,10 @@ path{
 .button{
     cursor: pointer;
 }
+
+
+
+
 
 #ws_bg rect{
 	/*fill: aqua;*/
