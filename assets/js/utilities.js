@@ -8,6 +8,15 @@ function getIndexbyID(id) {
 	return map[id];
 }
 
+function isDashed(d) {
+	for (var i = d.interpolation.length - 1; i >= 0; i--) {
+			if (frame > d.interpolation[i][0] && frame < d.interpolation[i][1] ){
+				return true;
+			}
+		}
+	return false;
+}
+
 function addLoadEvent(func) {
 	var oldonload = window.onload;
 	if (typeof window.onload != 'function') {
@@ -36,7 +45,7 @@ function selectTracklet(d){
 		if(cur_status == "conflicted")
 			return;
 		tracklets[index].status = "selected";
-		selected.push(d);
+		selected.push(tracklets[index]);
 		console.log("selectTracklet: ", selected)
 	}
 }
@@ -44,7 +53,8 @@ function selectTracklet(d){
 function setStatus(id, status){
 	var index = getIndexbyID(id);
 	var cur_status = tracklets[index].status
-	if(cur_status != "selected"){
+	// console.log(cur_status, status)
+	if(cur_status != "selected" && cur_status != "conflicted" ){
 		tracklets[index].status = status	
 	}
 }
@@ -52,6 +62,8 @@ function setStatus(id, status){
 
 function getTrackletsByFrame(data, frame){
 	var current_tracklets = [];
+	selected_num = 0;
+	tracklets_num = 0;
 	for(var i = 0; i < data.length; ++i){
 		map[data[i].id] = i;
 		var start_frame = data[i]["start_frame"];
@@ -71,7 +83,11 @@ function getTrackletsByFrame(data, frame){
 			data[i].status = "default";
 
 		if(start_frame <= frame && frame <= end_frame || data[i].status == "selected"){
+			if (data[i].status == "selected") {
+				selected_num ++;
+			}
 			current_tracklets.push(data[i]);
+			tracklets_num++;
 		}
 	}
 	return current_tracklets;
