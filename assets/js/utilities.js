@@ -148,10 +148,11 @@ function getTrackletById(id){
 
 }
 function merge(){
-	console.log("merge")
-	if(selected.length!=2)
+
+	console.log(d3.select("#wsbuttong-1").selectAll(".enable").size())
+	if(d3.select("#wsbuttong-1").selectAll(".enable").size()==0)
 		return 0;
-	
+	console.log("merge")
 
 	//根据id选择对象
 	var tracklet1=selected[0],
@@ -200,10 +201,11 @@ function merge(){
 }
 
 function cutline(){
-	console.log("cut")
-	console.log(d3.selectAll("#wsbutton-3 .enable").size())
-	if(d3.selectAll("#wsbutton-3 .enable").size()==1)//改成0
+	
+	console.log(d3.selectAll(".enable").size())
+	if(d3.select("#wsbuttong-2").selectAll(".enable").size()==0)//改成0
 		return 0;
+	console.log("cut")
 
 	var tracklet1=selected[0]
 	//获取interpolation中位置
@@ -259,6 +261,7 @@ function cutline(){
 	// console.log(tracklet1)
 	// console.log(tracklet2)
 }
+
 function setNewId(){
 	//设置新ID
 	var maxid=0;
@@ -267,5 +270,61 @@ function setNewId(){
 			maxid=tracklets[i].id
 	}
 	return maxid+1
+}
+
+
+function selectLineX1(d){
+	var fps=source_video.fps
+	var p
+	if(d.start_frame>=frame+future_duration-fps)
+		p=frame+future_duration-fps
+	else if(d.end_frame<=frame-past_duration+fps)
+		p=frame-past_duration+fps-(end_frame-start_frame)
+	else
+		p=d.start_frame
+
+	console.log("start"+p)
+	return width_graph*Math.max((p-(frame-past_duration))/(past_duration+future_duration),0)
+}
+
+function selectLineX2(d){
+	var fps=source_video.fps
+	var p
+	if(d.start_frame>=frame+future_duration-fps)
+		p=frame+future_duration-fps+(end_frame-start_frame)
+	else if(d.end_frame<=frame-past_duration+fps)
+		p=frame-past_duration+fps
+	else
+		p=d.end_frame
+
+	console.log("end:"+p)
+	return width_graph*Math.min((p-(frame-past_duration))/(past_duration+future_duration),1)
+}
+
+function load(){
+	document.getElementById("uploadFile").click(); 
+}
+
+function readLocalFile () {
+        
+        var localFile = document.getElementById("uploadFile").files[0];
+
+        var reader = new FileReader();
+       
+        reader.readAsText(localFile)
+        reader.onload=function(f){  
+        var result=document.getElementById("fileContent");  
+    
+        var newdata=JSON.parse(this.result)
+        
+        tracklets = initData(newdata);
+    } 
+        
+}
+
+function save(){
+	var blob = new Blob([JSON.stringify(tracklets)], { type: "" });
+	saveAs(blob, "tracklets.json");
+
 }
 
