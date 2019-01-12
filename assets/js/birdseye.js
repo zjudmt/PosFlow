@@ -69,7 +69,7 @@ function updateBirdseye(){
 	// set attributes of the elements
 	circles.attr("class", function(d){
 			var c_name = "birdseye_circle " + d.status;
-			if (isDash(d)){
+			if (isDashed(d)){
 			  c_name += " dashed";
 			}
 			return c_name;

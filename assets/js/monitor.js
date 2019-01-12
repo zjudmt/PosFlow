@@ -63,34 +63,39 @@ function initMain() {
 
 	main = monitor.append("g")
 		.attr("id", "players")
+
+	path = main.append("g")
+		.attr("id", "paths")
+
+	rect = main.append("g")
+		.attr("id", "rects")
 }
 
-// 动态更新的主循环函数
+
 function updateMain(){
 	// 通过id选择器选中初始化时创建的 "g"
 	main = d3.select("#players")
 
 	// 动态绑定数据
-	players = main
-		.selectAll("g").data(current_tracklets)
-
+	paths = main.select("#paths")
+		.selectAll("path").data(current_tracklets)
+	rects = main.select("#rects")
+		.selectAll("rect").data(current_tracklets)
 	// 如果有多的元素就remove掉
-	players.exit().remove();
+	paths.exit().remove();
+	rects.exit().remove();
 
 	// 如果需要新的元素就添加
-	new_players =  players.enter().append("g")
-	new_players.append("path")
-	new_players.append("rect")
+	new_paths =  paths.enter().append("path")
+	new_rects =  rects.enter().append("rect")
 
-	// 首先将球员做整体平移并通过class绑定状态
-	players.attr("transform", getPlayerTransform)
-		.attr("class", function(d){
-			return d.status + " main";
-	})
 
 	// 在绑定矩形之前先绑定路径,避免矩形被路径遮挡
 	// 通过路径生成器生成路径,然后使用pathBasepoint平移到球员脚下的位置
-	players.select("path").attr("transform", pathBasepoint)
+	paths.attr("transform", pathBasepoint)
+		.attr("class", function(d){
+				return d.status + " main";
+		})	
 		.attr("d", trackGenerator)
 		.attr("stroke", function(d){
 			if(d.status == "conflicted")
@@ -100,7 +105,11 @@ function updateMain(){
 	});
 
 	// 绑定矩形,长宽通过比例尺计算 同时绑定操作元素
-	players.select("rect").attr("width", getPlayerRectWidth)
+	rects.attr("transform", getPlayerTransform)
+		.attr("class", function(d){
+			return d.status + " main";
+		})
+		.attr("width", getPlayerRectWidth)
 		.attr("height", getPlayerRectHeight)
 		.attr("stroke", function(d){
 			// console.log(d.status)
@@ -165,15 +174,13 @@ function updateMain(){
 			x: vid2x(d.boxes[index][2] / 2 ),
 			y: vid2y(d.boxes[index][3] ),
 		}
-		var str = "translate(" + current_point.x + ","
-		+ current_point.y + ")";
+		var pos = d["boxes"][index];
+		var base_x = vid2x(pos[0]) + current_point.x;
+		var base_y = vid2y(pos[1]) + current_point.y;
+		var str = "translate("+ base_x + "," + base_y + ")";
 		return str;
 	}
-
-
 }
-
-
 // 各种取位移或者尺寸函数,都需要进行坐标保护
 function getPlayerTransform(d) {
 	var index = frame-d["start_frame"];
