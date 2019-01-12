@@ -1,5 +1,6 @@
 function initMonitor() {
 
+	// monitor 是整个区域
 	monitor = svg
 		.append("g")
 			.attr("id", "monitor")
@@ -10,8 +11,10 @@ function initMonitor() {
 				return str
 			})
 
+	// 用flag_canplaythrough来判断是否已经初始化过monitor了
 	flag_canplaythrough = false;
 	var video_obj = document.getElementById("video")
+	// 如果还拿不到duration 说明canplaythrough时间还没发生 那就添加个监听器
 	if( !video_obj.duration ){
 		video_obj.addEventListener("canplaythrough", function(){
 			doInitMonitor();
@@ -22,24 +25,26 @@ function initMonitor() {
 	}
 }
 
+// 初始化Monitor区域 包括 Main 和 Controls
 function doInitMonitor() {
 	if(!flag_canplaythrough){
 		var video_obj = document.getElementById("video")
+		// 获取duration 进度条需要
 		source_video.duration = video_obj.duration;
 		source_video.seconds = Math.round(video_obj.duration);
 		initMain();
 		initControls();
-		timer_Moniter = d3.timer(updateMonitor);
 		flag_canplaythrough = true;
 	}
 }
 
 
-
+// 初始化Main 主要是生成各种需要的比例尺 以及添加main的group并设置id
 function initMain() {
-	console.log("initMain")
+
 	var layout_main = layout.monitor.main
 
+	// 从原始视频的坐标投影到main的线性坐标变化
 	vid2x = d3.scaleLinear()
 		.domain([0, source_video.w])
 		.range([layout_main.x, layout_main.x + layout_main.w])
@@ -60,20 +65,31 @@ function initMain() {
 		.attr("id", "players")
 }
 
+// 动态更新的主循环函数
 function updateMain(){
+	// 通过id选择器选中初始化时创建的 "g"
 	main = d3.select("#players")
+
+	// 动态绑定数据
 	players = main
 		.selectAll("g").data(current_tracklets)
-	// console.log("updateMain:", frame)
+
+	// 如果有多的元素就remove掉
+	players.exit().remove();
+
+	// 如果需要新的元素就添加
 	new_players =  players.enter().append("g")
 	new_players.append("path")
 	new_players.append("rect")
 
+	// 首先将球员做整体平移并通过class绑定状态
 	players.attr("transform", getPlayerTransform)
 		.attr("class", function(d){
 			return d.status + " main";
-		})
+	})
 
+	// 在绑定矩形之前先绑定路径,避免矩形被路径遮挡
+	// 通过路径生成器生成路径,然后使用pathBasepoint平移到球员脚下的位置
 	players.select("path").attr("transform", pathBasepoint)
 		.attr("d", trackGenerator)
 		.attr("stroke", function(d){
@@ -81,9 +97,9 @@ function updateMain(){
 				return "#7a7374";
 			else
 				return d.color;
-		});
+	});
 
-
+	// 绑定矩形,长宽通过比例尺计算 同时绑定操作元素
 	players.select("rect").attr("width", getPlayerRectWidth)
 		.attr("height", getPlayerRectHeight)
 		.attr("stroke", function(d){
@@ -95,9 +111,9 @@ function updateMain(){
 		})
 		.attr("stroke-dasharray", function(d){
 			if(isDashed(d))
-				return "10,10"
+				return "4,4";
 			else
-				return ""
+				return "";
 		})
 		.on("click", selectTracklet)
 		.on("mouseover", function(d){
@@ -105,22 +121,19 @@ function updateMain(){
 		})
 		.on("mouseout", function(d){
 			setStatus(d.id, "default")
-		})
+	})
 
-	players.exit().remove();
-
-
+	// 路径生成器
 	function trackGenerator(d){
-		var end_index = frame - d.start_frame + 5 * source_video.fps;
-		// console.log("end_index 0 : ", end_index)
+		// 首先做判断,保证不会出现数组越界,同时尽可能至少保留5秒信息
+		var end_index = frame - d.start_frame + future_duration;
 		end_index = d3.max([0, end_index])
 		end_index = d3.min([end_index, d.boxes.length - 1]);
-		// console.log("end_index 1 : ", end_index)
-		// console.log("end_index 2 : ", end_index)
-		var start_index = frame - d.start_frame - 5 * source_video.fps
-		start_index = d3.min([start_index, d.boxes.length - 1 - 5 * source_video.fps]);
+		var start_index = frame - d.start_frame - past_duration
+		start_index = d3.min([start_index, d.boxes.length - 1 - past_duration]);
 		start_index = d3.max([0, start_index]);
 
+		// 以当前帧(保护过的)作为基准点
 		var cur_frame = frame - d.start_frame;
 		cur_frame = d3.min([cur_frame, d.boxes.length - 1]);
 		cur_frame = d3.max([0, cur_frame])
@@ -128,13 +141,11 @@ function updateMain(){
 			x: vid2x( d.boxes[cur_frame][0] + d.boxes[cur_frame][2] / 2 ),
 			y: vid2y( d.boxes[cur_frame][1] + d.boxes[cur_frame][3] ),
 		}
+		// 使用d3的线段生成器
 		var lineGenerator = d3.line()
-							.x(function(d){
-								return d.x ;
-							} )
-							.y(function(d){
-								return d.y ;
-							} );
+			.x(function(d){return d.x ;})
+			.y(function(d){return d.y ;});
+		// 根据之前计算的下标,将合适的数据取出来
 		var path_data = [];
 		for (var i = start_index; i < end_index; i++) {
 			var track_point = {
@@ -163,15 +174,11 @@ function updateMain(){
 }
 
 
+// 各种取位移或者尺寸函数,都需要进行坐标保护
 function getPlayerTransform(d) {
 	var index = frame-d["start_frame"];
 	index = d3.min([index, d["boxes"].length-1]);
 	index = d3.max([0, index])
-	// if(d.status == "selected"){
-	// 	console.log("selected_num", selected_num)
-	// 	console.log("tracklets_num", tracklets_num)
-	// 	console.log("selected id: ", d.id);
-	// }
 	var pos = d["boxes"][index];
 	var str = "translate(" + vid2x(pos[0]) +
 	" , " + vid2y(pos[1]) + ")";
@@ -202,7 +209,7 @@ function updateMonitor() {
 	updateMain();
 }
 
-
+// 通过时间获取
 function getTimeText(current_time){
 	let t = Math.floor(current_time);
 	let min = Math.floor(current_time / 60);
@@ -237,7 +244,7 @@ function initControls(){
 			h: 0.2, w: 39,
 		},
 		timebox: {
-			x: 42, y: 0.7,
+			x: 42, y: 0.75,
 			w: 6, h: 0.8,
 		},
 	}

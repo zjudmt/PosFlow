@@ -267,7 +267,6 @@ function updateWorkspace(){
 
 			return width_graph*Math.max((p-(frame-past_duration))/(past_duration+future_duration),0)
 		})
-
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
 		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
 		.attr("clip-path","url(#ws-clipPath2)")

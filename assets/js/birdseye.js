@@ -18,12 +18,12 @@ function initBirdseye(){
             	.attr("width", width)
             	.attr("height", height);
 
-    // append the group of the birdseye_circles for the positions of the players
-	birdseyeLayout.append("g")
-				.attr("id", "birdseye_circles")
     // append the group of the birdseye_paths for the paths of the players
 	birdseyeLayout.append("g")
 				.attr("id", "birdseye_paths")
+    // append the group of the birdseye_circles for the positions of the players
+	birdseyeLayout.append("g")
+				.attr("id", "birdseye_circles")
 }
 
 function updateBirdseye(){
@@ -41,6 +41,25 @@ function updateBirdseye(){
 				.range([y+height-padding.bottom, y+padding.top]);
 
 	// select all circles in birdseye view 
+	var paths = birdseyeLayout.select("#birdseye_paths")
+							.selectAll("path")
+							.data(current_tracklets)
+	// fit the numbers of elements with the data
+	paths.exit().remove()
+	paths.enter().append("path")
+	// set attributes of the elements
+	paths.attr("class",function(d){
+			return d["status"] + " birdseye_path"
+		})
+	 	.attr("id", function(d,i){
+	 		return "birdseye_path" + String(i);
+	 	})
+	 	.attr("d", trackGenerator)
+		.attr("stroke", function(d){
+			return d["color"];
+		});
+
+	// select all circles in birdseye view 
 	var circles = birdseyeLayout.select("#birdseye_circles")
 							.selectAll("circle")
 							.data(current_tracklets)
@@ -50,9 +69,9 @@ function updateBirdseye(){
 	// set attributes of the elements
 	circles.attr("class", function(d){
 			var c_name = "birdseye_circle " + d.status;
-			// if (isDash(d)){
-			// 	c_name += " dashed";
-			// }
+			if (isDash(d)){
+			  c_name += " dashed";
+			}
 			return c_name;
 		})
 		.attr("id", function(d,i){
@@ -79,9 +98,6 @@ function updateBirdseye(){
 			if(d["status"] == "conflicted"){
 				return "#7a7374";
 			}
-			// else if(isDash(d)){
-			// 	return "white"
-			// }
 			else{
 				return d["color"];
 			}
@@ -93,27 +109,6 @@ function updateBirdseye(){
 		.on("mouseout", function(d){
 			setStatus(d["id"], "default");
 		})
-		
-
-	// select all circles in birdseye view 
-	var paths = birdseyeLayout.select("#birdseye_paths")
-							.selectAll("path")
-							.data(current_tracklets)
-	// fit the numbers of elements with the data
-	paths.exit().remove()
-	paths.enter().append("path")
-	// set attributes of the elements
-	paths.attr("class",function(d){
-			return d["status"] + " birdseye_path"
-		})
-	 	.attr("id", function(d,i){
-	 		return "birdseye_path" + String(i);
-	 	})
-	 	.attr("d", trackGenerator)
-		.attr("stroke", function(d){
-			return d["color"];
-		})
-		// .attr("stroke-dasharray", dashArrayGenerator);
 
 	// change the data from the pixels in screen to the real play field
 	// that is [0,3840] * [0,800] ----> [0,105]*[0,68] + outside

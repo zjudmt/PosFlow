@@ -6,6 +6,12 @@
 	top: 0;
 	left: 0;
 }
+
+text{
+	cursor: default;
+	user-select:none;
+}
+
 body{
 	background: url(/resources/PosFlow/img/bg.png) no-repeat;
 	background-size: 100%;
@@ -37,7 +43,14 @@ path{
 	stroke-opacity: 0.5;
 }
 
+.conflicted{
+	cursor: not-allowed;
+}
 
+#players g.conflicted rect{
+	cursor: not-allowed;
+
+}
 
 #players rect{
 	cursor: pointer;
@@ -61,10 +74,6 @@ path{
 
 #players .selected{
 	stroke-opacity: 1;
-}
-
-#players .conflicted rect{
-	cursor: not-allowed;
 }
 
 #players .conflicted path{
@@ -97,9 +106,13 @@ path{
     cursor: pointer;
 }
 
+#ws_content line{
+	cursor: pointer;
+}
 
-
-
+#ws_content line.conflicted{
+	cursor: not-allowed;
+}
 
 #ws_bg rect{
 	/*fill: aqua;*/
@@ -115,6 +128,7 @@ path{
 #ws_bg line{
 	stroke: #1ba784;
 	stroke-width: 2;
+	cursor: pointer;
 }
 
 #seperation{
@@ -128,6 +142,11 @@ path{
 #ws_ba image.wsbutton{
 	opacity: 0.5;
 }
+
+#ws_ba image.enable{
+	opacity: 0.9;
+}
+
 
 #birdseye_paths path.selected{
 	opacity: 1;
@@ -145,6 +164,14 @@ path{
 	opacity: 0;
 }
 
-#ws_ba image.enable{
-	opacity: 0.9;
+.birdseye_circle{
+	cursor: pointer;
+}
+
+.birdseye_circle.conflicted{
+	cursor: not-allowed;
+}
+
+.birdseye_circle.dashed{
+	fill-opacity: 0;
 }

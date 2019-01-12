@@ -167,7 +167,7 @@ function update() {
 
 	updateLayout();
 	updateWorkspace();
-	// updateMonitor();
+	updateMonitor();
 	updateBirdseye();
 }
 
