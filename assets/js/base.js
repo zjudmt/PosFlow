@@ -23,7 +23,7 @@ function initLayout(argument) {
 		y: 0,
 	}
 	// on my laptop unit = 32 = viewport.h / 27
-	var row = [
+	row = [
 				{
 					name: "header",
 					h: unit,
@@ -117,7 +117,8 @@ function initData(data){
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
 		data[i]["color"] =  getColorByID(data[i].id);
-		data[i].interpolation=[];
+		if(! data[i]["interpolation"])
+			data[i]["interpolation"] = [];
 	}
 	return data;
 }
@@ -144,7 +145,6 @@ function init(argument) {
 	test();
 	initVideo();
 	initSVG();
-	initHeader();
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
@@ -166,10 +166,12 @@ function update() {
 	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
 	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
 
+	updateLayout();
 	updateWorkspace();
 	// updateMonitor();
 	updateBirdseye();
 }
+
 
 
 function initSVG(){
@@ -209,8 +211,6 @@ function initVideo(){
 	video = d3.select("#video-container")
 		.append("video")
 			.attr("width", "100%" )
-			// .attr("height", layout.monitor.main.h )
-			// .attr("controls", "controls")
 			.attr("controls", "false")
 			.attr("preload", "auto")
 			.attr("src", source_video.src) //源视频文件位置
@@ -220,6 +220,32 @@ function initVideo(){
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
 
 }
+
+
+function updateLayout() {
+	viewport = {
+		w: window.innerWidth,
+		h: window.innerWidth * 9 / 16,
+		x: 0,
+		y: 0,
+		scale: window.innerWidth / 1536,
+	};
+	d3.select("#SVG-container")
+		.attr("width", viewport.w )
+		.attr("height", viewport.h )
+	d3.select("#svg")
+		.attr("width", viewport.w )
+		.attr("height", viewport.h )
+	layout.new_video = {
+			x: 0,
+			y: (row[0].h + row[1].h) * viewport.scale ,
+			w: window.innerWidth,
+			h: viewport.h * viewport.scale,
+		}
+	d3.select("#video-container")
+		.style("top", layout.new_video.y + "px" )
+}
+
 
 
 addLoadEvent(init);
