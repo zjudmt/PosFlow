@@ -117,7 +117,6 @@ function initData(data){
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
 		data[i]["color"] =  getColorByID(data[i].id);
-		data[i]["dashed"] = false;
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
 	}
