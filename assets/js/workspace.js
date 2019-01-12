@@ -1,21 +1,4 @@
 
-// var width_svg=1000
-// var height_svg=800
-// var x_workspace=500
-// var y_workspace=400
-
-
-
-
-// d3.json("src/tracklets.json",function(error,data2) {
-// 	tracklets=data2
-// 	console.log(tracklets)
-// 	initSvg()
-
-// 	initWorkspace()
-// });
-
-
 
 function initWorkspace(){
 
@@ -49,37 +32,42 @@ function initWorkspace(){
 	
 	y_drag=0//滚动条高度
 
-	// 选取前后五秒出现的轨迹
-	// var range_tracklets=dataToWorkspace(tracklets,frame)
-	// var range_tracklets=getTrackletsInRange(tracklets,frame, past_duration, future_duration)
-
 
 	workspace=d3.select("svg")
 		.append("g")
 		.attr("id","workspace")
 		.attr("transform","translate("+x_start+","+y_start+")")
 
-
+	//按钮区域
 	var buttonarea=workspace.append("g")
 		.attr("id","ws_ba")
-	// buttonarea.append("rect")
-	// 	.attr("width",width_buttonarea)
-	// 	.attr("height",height_workspace)
-	// 	.attr("fill","white")
-
+	
 	for(var i=0;i<img_list.length;i++){
 		buttonarea.append("g")
-			.attr("id","button-"+i)
+			.attr("id","wsbuttong-"+(i+1))
 			.attr("transform","translate(0,"+i*width_buttonarea+")")
 			.append("svg:image")
-			.attr("id","buttonimage-"+i)
+			.attr("id","wsbutton-"+(i+1))
 			.attr("class","wsbutton")
 			.classed("button", true)
+			.classed("enable",false)
 			.attr("transform","translate("+width_side+","+width_side+")")
 			.attr("xlink:href", img_list[i])
 			.attr("height",width_buttonarea*img_propotion)
-			// .on("mouseover",function(d,i){d3.select(this).attr("height",width_buttonarea*img_propotion*)})
+			
 	}
+	//merge按钮
+	// var button_merge= buttonarea.select("#wsbutton-1")
+	buttonarea.select("#wsbutton-1").append("title").text("merge")
+	buttonarea.select("#wsbutton-2").append("title").text("cut")
+	buttonarea.select("#wsbutton-3").append("title").text("load")
+	buttonarea.select("#wsbutton-4").append("title").text("save")
+
+	buttonarea.select("#wsbutton-3").classed("enable",true)
+	buttonarea.select("#wsbutton-4").classed("enable",true)
+	
+	buttonarea.select("#wsbutton-1").on("click",merge)
+	buttonarea.select("#wsbutton-2").on("click",cutline)
 
 
 
@@ -234,6 +222,7 @@ function updateWorkspace(){
 	sgroups.enter().append("line")
 
 	sgroups.attr("id",function(d){return "se_"+d.id})
+		.attr("class", function(d){return d.status + " workspace"})
 		.attr("x1",function(d){return width_graph*Math.max((d.start_frame-(frame-past_duration))/(past_duration+future_duration),0)})
 		.attr("x2",function(d){return width_graph*Math.min((d.end_frame-(frame-past_duration))/(past_duration+future_duration),1)})
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
@@ -259,8 +248,8 @@ function updateWorkspace(){
 	tgroups.exit().remove()
 	tgroups.enter().append("line")
 		
-	tgroups
-		.attr("id",function(d){return "ts_"+d.id})
+	tgroups.attr("id",function(d){return "ts_"+d.id})
+		.attr("class", function(d){return d.status + " workspace"})
 		.attr("x1",function(d){return width_graph*(d.start_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("x2",function(d){return width_graph*(d.end_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
@@ -273,8 +262,8 @@ function updateWorkspace(){
 				return d.color;})
 		.attr("stroke-width",thickness_line)
 		.on("click",selectTracklet)
-		.on("mouseover",function(d){console.log("over"+d.id);setStatus(d.id, "hover")})
-		.on("mouseout",function(d){console.log("outof"+d.id); setStatus(d.id, "default")})
+		.on("mouseover",function(d){setStatus(d.id, "hover")})
+		.on("mouseout",function(d){setStatus(d.id, "default")})
 		
 
 	

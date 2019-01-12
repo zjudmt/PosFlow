@@ -117,6 +117,7 @@ function initData(data){
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
 		data[i]["color"] =  getColorByID(data[i].id);
+		data[i].interpolation=[];
 	}
 	return data;
 }
@@ -218,47 +219,6 @@ function initVideo(){
 
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
 
-}
-
-function merge(id1,id2){
-	var w;
-	//根据id选择对象
-	var tracklet1=getTrackletById(id1),
-		tracklet2=getTrackletById(id2);
-
-	//排序
-	if(tracklet1.end_frame>tracklet2.end_frame){
-		var temp=tracklet1;
-		tracklet1=tracklet2;
-		tracklet2=temp
-	}
-
-	//两个box作为关键帧
-	var box1=tracklet1.boxes[tracklet1.boxes.length-1],
-		box2=tracklet2.boxes[0],
-		num_newboxes=tracklet2.start_frame-tracklet1.end_frame-1;
-
-	//生成中间box
-	for(var i=0;i<num_newboxes;i++){
-		w=(i+1)/(num_newboxes+1)
-		var tempbox=[]
-		for(var j=0;j<4;j++){
-			tempbox.push(Math.round((1-w)*box1[j]+w*box2[j]))
-		}
-		tempbox.push(0)//插值后面多加个0
-		tracklet1.boxes.push(tempbox);
-	}
-
-	//复制后一个tracklet
-	for(var i=0;i<tracklet2.boxes.length;i++){
-		tracklet1.boxes.push(tracklet2.boxes[i]);
-	}
-	tracklet1.end_frame=tracklet2.end_frame;
-
-	//删除后一个tracklets
-	tracklets.splice(tracklet2.position,1)
-
-	// console.log(tracklet1.id,tracklet2.id)
 }
 
 
