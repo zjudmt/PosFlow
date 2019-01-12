@@ -174,3 +174,19 @@ path.conflicted{
 .birdseye_circle.dashed{
 	fill-opacity: 0;
 }
+
+#wsbutton-1{
+	cursor: not-allowed;
+}
+
+#wsbutton-1.enable{
+	cursor: pointer;
+}
+
+#wsbutton-2{
+	cursor: not-allowed;
+}
+
+#wsbutton-2.enable{
+	cursor: pointer;
+}
