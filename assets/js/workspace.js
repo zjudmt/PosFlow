@@ -68,7 +68,10 @@ function initWorkspace(){
 	
 	buttonarea.select("#wsbutton-1").on("click",merge)
 	buttonarea.select("#wsbutton-2").on("click",cutline)
-
+	buttonarea.select("#wsbutton-3")
+		.attr("type","file")
+		.on("click",load)
+	buttonarea.select("#wsbutton-4").on("click",save)
 
 
 
@@ -211,6 +214,26 @@ function updateWorkspace(){
 	var area_toselect=d3.select("#content-toselect")
 
 	
+	//更新按钮状态
+
+	merge_button=d3.select("#wsbutton-1")
+	cut_button=d3.select("#wsbutton-2")
+
+	if(selected.length==2)
+		merge_button.classed("enable",true)
+	else
+		merge_button.classed("enable",false)
+
+	
+	cut_button.classed("enable",false);
+	if(selected.length==1){
+		var tracklet_temp=selected[0]
+		for(var i=0;i<tracklet_temp.interpolation.length;i++){
+			if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
+				cut_button.classed("enable",true)
+			}
+		}
+	}
 
 
 
@@ -223,8 +246,30 @@ function updateWorkspace(){
 
 	sgroups.attr("id",function(d){return "se_"+d.id})
 		.attr("class", function(d){return d.status + " workspace"})
-		.attr("x1",function(d){return width_graph*Math.max((d.start_frame-(frame-past_duration))/(past_duration+future_duration),0)})
-		.attr("x2",function(d){return width_graph*Math.min((d.end_frame-(frame-past_duration))/(past_duration+future_duration),1)})
+		.attr("x2",function(d){
+			var fps=source_video.fps
+			var p
+			if(d.start_frame>=frame+future_duration-fps)
+				p=frame+future_duration-fps+(d.end_frame-d.start_frame)
+			else if(d.end_frame<=frame-past_duration+fps)
+				p=frame-past_duration+fps
+			else
+				p=d.end_frame
+
+			return width_graph*Math.min((p-(frame-past_duration))/(past_duration+future_duration),1)})
+		.attr("x1",function(d){
+			var fps=source_video.fps
+			var p
+			if(d.start_frame>=frame+future_duration-fps)
+				p=frame+future_duration-fps
+			else if(d.end_frame<=frame-past_duration+fps)
+				p=frame-past_duration+fps-(d.end_frame-d.start_frame)
+			else
+				p=d.start_frame
+
+			return width_graph*Math.max((p-(frame-past_duration))/(past_duration+future_duration),0)
+		})
+
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
 		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
 		.attr("clip-path","url(#ws-clipPath2)")
