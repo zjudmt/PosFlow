@@ -126,7 +126,7 @@ path{
 }
 
 #ws_ba image.wsbutton{
-	opacity: 0.7;
+	opacity: 0.5;
 }
 
 #birdseye_paths path.selected{
@@ -143,4 +143,8 @@ path{
 
 #birdseye_paths path.conflicted{
 	opacity: 0;
+}
+
+#ws_ba image.enable{
+	opacity: 0.9;
 }
