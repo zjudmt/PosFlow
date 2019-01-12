@@ -34,10 +34,10 @@ function updateBirdseye(){
 	var padding = {left:30, right:30, top:20, bottom:20};
 
 	var xScale = d3.scaleLinear()
-					.domain([-17, 107])
+					.domain([-16, 110])
 					.range([x, x+width-padding.left-padding.right]);
 	var yScale = d3.scaleLinear()
-				.domain([-10, 88])
+				.domain([5, 70])
 				.range([y+height-padding.bottom, y+padding.top]);
 
 	// select all circles in birdseye view 
@@ -68,7 +68,7 @@ function updateBirdseye(){
 			var pos_ab = birdseyeTransition(d["boxes"][index]);
 			return yScale(pos_ab.y);
 		})
-		.attr("r", 5)
+		.attr("r", 8)
 		.attr("fill", function(d){
 			if(d["status"] == "conflicted")
 				return "#7a7374";
@@ -77,23 +77,23 @@ function updateBirdseye(){
 		})
 		.on("click", selectTracklet)
 		.on("mouseover", function(d){
-			setStatus(d.id, "hover");
+			setStatus(d["id"], "hover");
 		})
 		.on("mouseout", function(d){
-			setStatus(d.id, "default");
+			setStatus(d["id"], "default");
 		})
 		
 
 	// select all circles in birdseye view 
 	var paths = birdseyeLayout.select("#birdseye_paths")
 							.selectAll("path")
-							.data(range_tracklets)
+							.data(current_tracklets)
 	// fit the numbers of elements with the data
 	paths.exit().remove()
 	paths.enter().append("path")
 	// set attributes of the elements
 	paths.attr("class",function(d){
-			return d.status + " birdseye_path"
+			return d["status"] + " birdseye_path"
 		})
 	 	.attr("id", function(d,i){
 	 		return "birdseye_path" + String(i);
@@ -120,63 +120,27 @@ function updateBirdseye(){
 							.y(function(d){
 								return yScale(d.y);
 							});
+
+		var start_index = d3.max([0, frame-d["start_frame"]-5*source_video.fps]);
+		start_index = d3.min([start_index, d.boxes.length - 1]);
+
+		var end_index = frame - d.start_frame;
+		end_index = d3.min([end_index+5*source_video.fps, d.boxes.length - 1]);
+		end_index = d3.max([0, end_index]);
+
 		var path_data = [];
-		for(var i = 0; i < d["boxes"].length; i++){
+		for(var i = start_index; i < end_index; ++i){
 			path_data.push(birdseyeTransition(d["boxes"][i]));
 		}
 		return lineGenerator(path_data);
 	}
-	// on click, select the player and change the status of the corresponding players
-	function clickPlayerCircle(d){
-		var index = 0;
-		for(; index < tracklets.length; ++index){
-			if(tracklets[index]["id"] == d["id"]){
-				break;
-			}
-		}
-		if(index == tracklets.length){
-			console.log("error");
-			return;
-		}
-		tracklets[index]["status"] = "selected";
-		for(var i = 0; i < tracklets.length; ++i){
-			if(tracklets[i]["end_frame"] >= d["start_frame"] || tracklets[i]["start_frame"] <= d["end_frame"]){
-				tracklets[i]["status"] = "conflict";
-			}
-		}
-	}
-	// on mouse over
-	function hoverPlayerCircle(d){
-		console.log("hover");
-		var index = 0;
-		for(; index < tracklets.length; ++index){
-			if(tracklets[index]["id"] == d["id"]){
-				break;
-			}
-		}
-		if(index == tracklets.length){
-			console.log("error");
-			return;
-		}
-		if(tracklets[index]["status"] == "default"){
-			tracklets[index]["status"] = "hover";
-			console.log(tracklets[index]);
-		}
-	}
-	// on mouse out
-	function unhoverPlayerCircle(d){
-		var index = 0;
-		for(; index < tracklets.length; ++index){
-			if(tracklets[index]["id"] == d["id"]){
-				break;
-			}
-		}
-		if(index == tracklets.length){
-			console.log("error");
-			return;
-		}
-		if(tracklets[index]["status"] == "hover"){
-			tracklets[index]["status"] = "default";
-		}
-	}
+
+	// ["dashed"][i][0] for start frame and ["dashed"][j][1] for end frame
+	// function dashArrayGenerator(d){
+	// 	start_index = d["dashed"][0][0];
+	// 	end_index = d["dashed"][0][1];
+	// 	for(var i = 0; i < d; ++i){
+	// 		if(d[i] < d[])
+	// 	}
+	// }
 }
