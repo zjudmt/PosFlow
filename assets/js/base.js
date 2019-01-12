@@ -116,6 +116,7 @@ function initData(data){
 	console.log("initData")
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
+		data[i]["end_frame"] = data[i].start_frame + data[i].boxes.length
 		data[i]["color"] =  getColorByID(data[i].id);
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
@@ -148,7 +149,6 @@ function init(argument) {
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		current_tracklets = getTrackletsByFrame(tracklets, 0)
-		range_tracklets = getTrackletsInRange(tracklets, 0, past_duration, future_duration)
 		range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
 		initMonitor();
 		initWorkspace();
@@ -163,7 +163,6 @@ function update() {
 	frame = getCurrentFrame();
 	previous = current_tracklets;
 	current_tracklets = getTrackletsByFrame(tracklets, frame);
-	range_tracklets = getTrackletsInRange(tracklets, frame, past_duration, future_duration)
 	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
 
 	updateLayout();

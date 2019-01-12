@@ -53,7 +53,7 @@ function selectTracklet(d){
 function setStatus(id, status){
 	var index = getIndexbyID(id);
 	var cur_status = tracklets[index].status
-	// console.log(cur_status, status)
+	// console.log(id, cur_status, status)
 	if(cur_status != "selected" && cur_status != "conflicted" ){
 		tracklets[index].status = status	
 	}
@@ -91,36 +91,6 @@ function getTrackletsByFrame(data, frame){
 		}
 	}
 	return current_tracklets;
-}
-
-function getTrackletsInRange(data, frame, past_duration, future_duration){
-var selection = [];
-	for(var i = 0; i < data.length; ++i){
-		if(data[i]["start_frame"] <= frame && frame <= data[i]["end_frame"]){
-			var tracklet = {};
-			// deep copy
-			for(item in data[i]){
-				if(typeof data[i][item] == "object"){
-					tracklet[item] = [];
-				}
-				else{
-					tracklet[item] = data[i][item];
-				}
-			}
-			// set range
-			var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
-			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
-			// to correct the error of the data;
-			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
-			// fill in the tracklet["boxes"]
-			for(var j = start_index; j < end_index; ++j){
-				var pos = data[i]["boxes"][j];
-				tracklet["boxes"].push(pos);
-			}
-			selection.push(tracklet);
-		}
-	}
-	return selection;
 }
 
 function getTrackletsInRangeWsVer(data, frame, past_duration, future_duration){

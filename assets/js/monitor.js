@@ -66,8 +66,8 @@ function updateMain(){
 		.selectAll("g").data(current_tracklets)
 	// console.log("updateMain:", frame)
 	new_players =  players.enter().append("g")
-	new_players.append("rect")
 	new_players.append("path")
+	new_players.append("rect")
 
 	players.attr("transform", getPlayerTransform)
 		.attr("class", function(d){
