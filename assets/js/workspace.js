@@ -1,5 +1,3 @@
-
-
 function initWorkspace(){
 
 	var x_start=layout.workspace.x//workspace起始位置
