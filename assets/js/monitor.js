@@ -163,12 +163,23 @@ function updateMain(){
 			.y(function(d){return d.y ;});
 		// 根据之前计算的下标,将合适的数据取出来
 		var path_data = [];
-		for (var i = start_index; i < end_index; i++) {
-			var track_point = {
-				x: vid2x(d.boxes[i][0] + d.boxes[i][2]/2) - current_point.x ,
-				y: vid2y(d.boxes[i][1] + d.boxes[i][3]) - current_point.y ,
+		try{
+			for (var i = start_index; i < end_index; i++) {
+				if(!d.boxes[i])
+					continue;
+				var track_point = {
+					x: vid2x(d.boxes[i][0] + d.boxes[i][2]/2) - current_point.x ,
+					y: vid2y(d.boxes[i][1] + d.boxes[i][3]) - current_point.y ,
+				}
+				path_data.push(track_point);
 			}
-			path_data.push(track_point);
+		}
+		catch(err){
+			console.log("start_index:", start_index)
+			console.log("err:", err)
+			console.log("end_index:", end_index)
+			console.log("d.boxes.length:", d.boxes.length)
+			console.log("id: ", d)
 		}
 		return lineGenerator(path_data);
 	}
