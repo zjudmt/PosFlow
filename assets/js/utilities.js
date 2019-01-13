@@ -62,8 +62,7 @@ function setStatus(id, status){
 
 function getTrackletsByFrame(data, frame){
 	var current_tracklets = [];
-	selected_num = 0;
-	tracklets_num = 0;
+	var path_tracklets = [];
 	for(var i = 0; i < data.length; ++i){
 		map[data[i].id] = i;
 		var start_frame = data[i]["start_frame"];
@@ -83,14 +82,14 @@ function getTrackletsByFrame(data, frame){
 			data[i].status = "default";
 
 		if(start_frame <= frame && frame <= end_frame || data[i].status == "selected"){
-			if (data[i].status == "selected") {
-				selected_num ++;
+			if (data[i].status == "selected" || data[i].status == "hover") {
+				path_tracklets.push(data[i]);
 			}
 			current_tracklets.push(data[i]);
-			tracklets_num++;
 		}
 	}
-	return current_tracklets;
+	return [current_tracklets, path_tracklets];
+	// return current_tracklets;
 }
 
 function getTrackletsInRangeWsVer(data, frame, past_duration, future_duration){
@@ -115,11 +114,6 @@ var selection = [];
 
 			tracklet["start_frame"]=start_index+data[i]["start_frame"];
 			tracklet["end_frame"]=end_index+data[i]["start_frame"];
-			// fill in the tracklet["boxes"]
-			for(var j = start_index; j < end_index; ++j){
-				var pos = data[i]["boxes"][j];
-				tracklet["boxes"].push(pos);
-			}
 			selection.push(tracklet);
 		}
 	}
