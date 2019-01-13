@@ -46,10 +46,10 @@ function initLayout(argument) {
 					col: [
 							{
 								name: "blank",
-								w: unit * 0,
+								w: unit * 1,
 							},{				
 								name: "birdseye",
-								w: unit * 20,
+								w: unit * 19,
 							},{				
 								name: "workspace",
 								w: unit * 28,
@@ -116,7 +116,7 @@ function initData(data){
 	console.log("initData")
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
-		data[i]["end_frame"] = data[i].start_frame + data[i].boxes.length
+		data[i]["end_frame"] = data[i].start_frame + data[i].boxes.length - 1;
 		data[i]["color"] =  getColorByID(data[i].id);
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
@@ -162,14 +162,12 @@ function init(argument) {
 
 function update(elapsed) {
 	interval = elapsed - last;
-	// console.log("interval", interval);
 	frame = getCurrentFrame();
 	fps = (1000/interval)
 	if(fps < 20)
 		console.log("fps", fps, " at frame: ", frame);
+	
 	map = [];
-	// selected = [];
-	// previous = current_tracklets;
 	cur_data = getTrackletsByFrame(tracklets, frame)
 	current_tracklets = cur_data[0];
 	path_tracklets = cur_data[1];
@@ -179,6 +177,7 @@ function update(elapsed) {
 	updateWorkspace();
 	updateMonitor();
 	updateBirdseye();
+
 	last = elapsed;
 }
 
