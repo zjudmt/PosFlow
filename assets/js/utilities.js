@@ -63,6 +63,7 @@ function setStatus(id, status){
 function getTrackletsByFrame(data, frame){
 	var current_tracklets = [];
 	var path_tracklets = [];
+	var range_tracklets = [];
 	for(var i = 0; i < data.length; ++i){
 		map[data[i].id] = i;
 		var start_frame = data[i]["start_frame"];
@@ -80,44 +81,19 @@ function getTrackletsByFrame(data, frame){
 			data[i].status = "conflicted";
 		else if(data[i].status == "conflicted")
 			data[i].status = "default";
-
 		if(start_frame <= frame && frame <= end_frame || data[i].status == "selected"){
 			if (data[i].status == "selected" || data[i].status == "hover") {
 				path_tracklets.push(data[i]);
 			}
 			current_tracklets.push(data[i]);
 		}
+
+		// WsVer
+		if(data[i]["start_frame"] <= frame+future_duration && frame-past_duration <= data[i]["end_frame"]&&data[i].status!="selected")
+			range_tracklets.push(data[i]);
 	}
-	return [current_tracklets, path_tracklets];
+	return [current_tracklets, path_tracklets, range_tracklets];
 	// return current_tracklets;
-}
-
-function getTrackletsInRangeWsVer(data, frame, past_duration, future_duration){
-var selection = [];
-	for(var i = 0; i < data.length; ++i){
-		if(data[i]["start_frame"] <= frame+future_duration && frame-past_duration <= data[i]["end_frame"]&&data[i].status!="selected"){
-			var tracklet = {};
-			// deep copy
-			for(item in data[i]){
-				if(typeof data[i][item] == "object"){
-					tracklet[item] = [];
-				}
-				else{
-					tracklet[item] = data[i][item];
-				}
-			}
-			// set range
-			var start_index = d3.max([frame-past_duration, data[i]["start_frame"]]) - data[i]["start_frame"];
-			var end_index = d3.min([frame+future_duration, data[i]["end_frame"]]) - data[i]["start_frame"];
-			// to correct the error of the data;
-			end_index = d3.min([end_index, data[i]["boxes"].length-1]);
-
-			tracklet["start_frame"]=start_index+data[i]["start_frame"];
-			tracklet["end_frame"]=end_index+data[i]["start_frame"];
-			selection.push(tracklet);
-		}
-	}
-	return selection;
 }
 
 
@@ -125,22 +101,6 @@ function getCurrentFrame(){
 	return Math.floor(d3.select("#video").property("currentTime")*source_video.fps);
 }
 
-
-function getTrackletById(id){
-
-	for(var i=0;i<tracklets.length;i++){
-
-		if(tracklets[i].id==id){
-
-			tracklets[i].position=i;//用于标记位置以便删除
-
-			return tracklets[i]
-
-		}
-
-	}
-
-}
 function merge(){
 
 	console.log(d3.select("#wsbuttong-1").selectAll(".enable").size())
