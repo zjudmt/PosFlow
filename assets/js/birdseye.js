@@ -43,7 +43,7 @@ function updateBirdseye(){
 	// select all circles in birdseye view 
 	var paths = birdseyeLayout.select("#birdseye_paths")
 							.selectAll("path")
-							.data(current_tracklets);
+							.data(path_tracklets);
 	// fit the numbers of elements with the data
 	paths.exit().remove()
 	paths.enter().append("path")
@@ -58,7 +58,7 @@ function updateBirdseye(){
 		.attr("stroke", function(d){
 			return d["color"];
 		})
-		.attr("stroke-dasharray", dashArrayGenerator);
+		// .attr("stroke-dasharray", dashArrayGenerator);
 
 	// select all circles in birdseye view 
 	var circles = birdseyeLayout.select("#birdseye_circles")
