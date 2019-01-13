@@ -143,12 +143,14 @@ function init(argument) {
 	frame = 0;
 	map = [];
 	selected = [];
-	test();
+	// test();
 	initVideo();
 	initSVG();
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
-		current_tracklets = getTrackletsByFrame(tracklets, 0)
+		cur_data = getTrackletsByFrame(tracklets, 0)
+		current_tracklets = cur_data[0];
+		path_tracklets = cur_data[1];
 		range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
 		initMonitor();
 		initWorkspace();
@@ -162,7 +164,9 @@ function update() {
 	// selected = [];
 	frame = getCurrentFrame();
 	previous = current_tracklets;
-	current_tracklets = getTrackletsByFrame(tracklets, frame);
+	cur_data = getTrackletsByFrame(tracklets, frame)
+	current_tracklets = cur_data[0];
+	path_tracklets = cur_data[1];
 	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
 
 	updateLayout();
