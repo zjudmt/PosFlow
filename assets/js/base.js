@@ -165,8 +165,8 @@ function update(elapsed) {
 	// console.log("interval", interval);
 	frame = getCurrentFrame();
 	fps = (1000/interval)
-	if(fps < 20)
-		console.log("fps", fps, " at frame: ", frame);
+	// if(fps < 5)
+	// 	console.log("fps", fps, " at frame: ", frame);
 	map = [];
 	// selected = [];
 	// previous = current_tracklets;
