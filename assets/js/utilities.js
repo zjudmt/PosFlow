@@ -184,6 +184,12 @@ function merge(){
 		tracklet1.boxes.push(tracklet2.boxes[i]);
 	}
 	tracklet1.end_frame=tracklet2.end_frame;
+
+	for(var i=0;i<tracklet2.interpolation.length;i++)
+		tracklet1.interpolation.push(tracklet2.interpolation[i])
+	tracklet1.interpolation.sort(function(a,b){return a[0]-b[0]})
+
+	
 	//存入第一个tracklet
 	for (var i = tracklets.length - 1; i >= 0; i--) {
 			if(tracklets[i].id == tracklet1.id)
