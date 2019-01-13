@@ -143,7 +143,6 @@ function init(argument) {
 	frame = 0;
 	map = [];
 	selected = [];
-	// test();
 	initVideo();
 	initSVG();
 	d3.json(source_data.src, function(error, data){
