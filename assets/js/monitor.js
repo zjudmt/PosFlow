@@ -286,6 +286,7 @@ function initControls(){
 			total_time: getTimeText( source_video.duration ), current_time: "00:00",
 		},
 		progress_bar: {
+			name: "progress_bar",
 			x: unit * lo.progress_bar.x , y: unit * lo.progress_bar.y ,
 			w: unit * lo.progress_bar.w , h: unit * lo.progress_bar.h ,
 			x2: unit * lo.progress_bar.x,
@@ -395,18 +396,25 @@ function initControls(){
 		progress_bar_watched.attr("x2",function(d){return d.x2})
 	}
 
-	function mousemove(){
+	d3.select("#svg").on("mouseup.controls", mouseup)
+	d3.select("#svg").on("mousemove.controls", mousemove)
+
+	function mousemove(d){
 		if (flag_control) {
 			mouse = d3.mouse(this);
-			console.log("mousemove",mouse);
-			if(mouse[0] <= controls_data.progress_bar.x ||
-			 mouse[0]>= controls_data.progress_bar.endpoint.x )
+			cur_x = mouse[0];
+			if(d.name != "progress_bar")
+				cur_x -= controls_data.progress_bar.x
+			if(cur_x <= controls_data.progress_bar.x ||
+			 cur_x >= controls_data.progress_bar.endpoint.x ){
 				flag_control = false;
-			newtime = x2time(mouse[0])
+				return;
+			}
+			newtime = x2time(cur_x)
 			video.property("currentTime",newtime);
 			// controls_data.timebox.current_time = newtime;
-
 		}
+		// console.log("mousemove");
 	}
 	function mousedown(){
 		flag_control = true;
@@ -416,13 +424,26 @@ function initControls(){
 			flag_control = false;
 		newtime = x2time(mouse[0])
 		video.property("currentTime",newtime);
+		// console.log("mousedown")
 		// update()
 		// controls_data.timebox.current_time = newtime;
 	}
 
-	function mouseup(){
+	function mouseup(d){
+		if(!flag_control)
+			return
+		else
+			mouse = d3.mouse(this);
+		var cur_x = mouse[0]
+		if(d.name != "progress_bar")
+			cur_x -= controls_data.progress_bar.x
+		if(cur_x >= controls_data.progress_bar.x
+		&& cur_x<= controls_data.progress_bar.endpoint.x){
+			newtime = x2time(cur_x)
+			video.property("currentTime",newtime);	
+		}
+		console.log("mouseup", this, d);
 		flag_control = false;
-		update()
 	}
 
 	function clickPlay(){

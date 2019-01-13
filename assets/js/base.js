@@ -162,14 +162,12 @@ function init(argument) {
 
 function update(elapsed) {
 	interval = elapsed - last;
-	// console.log("interval", interval);
 	frame = getCurrentFrame();
 	fps = (1000/interval)
 	if(fps < 20)
 		console.log("fps", fps, " at frame: ", frame);
+	
 	map = [];
-	// selected = [];
-	// previous = current_tracklets;
 	cur_data = getTrackletsByFrame(tracklets, frame)
 	current_tracklets = cur_data[0];
 	path_tracklets = cur_data[1];
@@ -179,6 +177,7 @@ function update(elapsed) {
 	updateWorkspace();
 	updateMonitor();
 	updateBirdseye();
+
 	last = elapsed;
 }
 
