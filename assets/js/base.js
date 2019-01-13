@@ -171,7 +171,6 @@ function update(elapsed) {
 	fps = (1000/interval)
 	if(fps < 20)
 		console.log("fps", fps, " at frame: ", frame);
-	
 	map = [];
 	cur_data = getTrackletsByFrame(tracklets, frame)
 	current_tracklets = cur_data[0];
