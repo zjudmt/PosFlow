@@ -269,8 +269,8 @@ function updateWorkspace(){
 		})
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
 		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
-		.attr("stroke-dasharray", dashGenerator)
-		.attr("clip-path","url(#ws-clipPath2)")
+		.attr("stroke-dasharray", s_dashGenerator)
+		// .attr("clip-path","url(#ws-clipPath2)")
 		.attr("stroke",function(d){return d.color})
 		.attr("stroke-width",thickness_line)
 		.on("click",selectTracklet)
@@ -297,7 +297,7 @@ function updateWorkspace(){
 		.attr("x2",function(d){return width_graph*(d.end_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
 		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
-		.attr("stroke-dasharray", dashGenerator)
+		.attr("stroke-dasharray", t_dashGenerator)
 		.attr("clip-path","url(#ws-clipPath)")
 		.attr("stroke",function(d){
 			if(d.status == "conflicted")
@@ -309,12 +309,141 @@ function updateWorkspace(){
 		.on("mouseover",function(d){setStatus(d.id, "hover")})
 		.on("mouseout",function(d){setStatus(d.id, "default")})
 	
-	function dashGenerator(d){
-		
-
+	function time2length(t){
+		return width_graph*t/(past_duration+future_duration);
 	}
 
-	
+	function t_dashGenerator(d){
+		// 找能显示长方形的端点时间[t1, t2]
+		var t1 = d["start_frame"];
+		var t2 = d["end_frame"];
+		// var t2 = d3.min([d["end_frame"], frame+future_duration]);
+		// 找到虚线可能的起始点， 找不到为数组长度
+		var dash_index = d["interpolation"].length;
+		for(var i = 0, len = d["interpolation"].length; i < len; ++i){
+			if(t1 < d["interpolation"][i][1]){
+				dash_index = i;
+				break;
+			}
+		}
+		// 添加dasharray中的字符
+		var dash_str = "";
+		var count = 0;
+		var interval = 3;
+		var t = t1;
+		var t_end = t1;
+		for(t = t1; t<t2 && dash_index!=d["interpolation"].length; ++t){
+			// 找到虚线起始点，把上一条实线写进去
+			if(t == d["interpolation"][dash_index][0]){
+				dash_str += String(time2length(t-t_end))+",";
+				t_end = t;
+				count++;
+			}
+			// 找到虚线终点，处理虚线
+			else if(t == d["interpolation"][dash_index][1]){
+				var dash_end_t = d["interpolation"][dash_index][0];
+				if(count == 0){
+					dash_end_t = t1;
+				}
+				var n = Math.floor((t-dash_end_t)/interval);
+				// 拓展线条字符串
+				for(var i = 0; i < n; ++i){
+					dash_str += String(time2length(interval))+",";
+					count++;
+				}
+				if(t-dash_end_t != n*interval){
+					dash_str += String(time2length(t-dash_end_t-n*interval))+",";
+					count++;
+				}
+				if(count%2 == 1){
+					dash_str += String(0)+",";
+					count++;
+				}
+				// 选择下一个虚线
+				dash_index++;
+				t_end = t;
+			}
+		}
+		//  处理最后一条虚线后面的实线部分
+		dash_str += String(time2length(t2-t));
+		// if(d["interpolation"].length != 0){
+		// 	console.log(dash_str);
+		// 	console.log(d);
+		// }
+		return dash_str;
+	}
+
+	function s_dashGenerator(d){
+		// 找能显示长方形的端点时间[t1, t2]
+		var t1 = d["start_frame"];
+		if(d["end_frame"] < frame-past_duration+25){
+			t1 = d["end_frame"]-25;
+		}
+		else if(d["start_frame"] > frame-past_duration){
+			t1 = d["start_frame"];
+		}
+		else{
+			t1 = frame-past_duration;
+		}
+		var t2 = d["end_frame"];
+		console.log(t1,t2)
+
+		// 找到虚线可能的起始点， 找不到为数组长度
+		var dash_index = d["interpolation"].length;
+		for(var i = 0, len = d["interpolation"].length; i < len; ++i){
+			if(t1 < d["interpolation"][i][1]){
+				dash_index = i;
+				break;
+			}
+		}
+		// 添加dasharray中的字符
+		var dash_str = "";
+		var count = 0;
+		var interval = 3;
+		var t = t1;
+		var t_end = t1;
+		for(t = t1; t<t2 && dash_index!=d["interpolation"].length; ++t){
+			// 找到虚线起始点，把上一条实线写进去
+			if(t == d["interpolation"][dash_index][0]){
+				dash_str += String(time2length(t-t_end))+",";
+				t_end = t;
+				count++;
+			}
+			// 找到虚线终点，处理虚线
+			else if(t == d["interpolation"][dash_index][1]){
+				var dash_end_t = d["interpolation"][dash_index][0];
+				if(count == 0){
+					dash_end_t = t1;
+				}
+				var n = Math.floor((t-dash_end_t)/interval);
+				// 拓展线条字符串
+				for(var i = 0; i < n; ++i){
+					dash_str += String(time2length(interval))+",";
+					count++;
+				}
+				if(t-d["interpolation"][dash_index][0] != n*interval){
+					dash_str += String(time2length(t-dash_end_t-n*interval))+",";
+					count++;
+				}
+				if(count%2 == 1){
+					dash_str += String(0)+",";
+					count++;
+				}
+				// 选择下一个虚线
+				dash_index++;
+				t_end = t;
+			}
+		}
+		//  处理最后一条虚线后面的实线部分
+		dash_str += String(time2length(t2-t));
+		// if(d["interpolation"].length != 0){
+		// 	console.log(dash_str);
+		// 	console.log(d);
+		// }
+		return dash_str;
+	}
+
+
 	// sgroups.append("line")
 	// 	.attr("x1",function(d){return width_graph*Math.max((d.start_frame-(frame-past_duration))/(past_duration+future_duration),0)})
 	// 	.attr("x2",function(d){return width_graph*Math.min((d.end_frame-(frame-past_duration))/(past_duration+future_duration),1)})

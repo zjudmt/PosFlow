@@ -163,6 +163,7 @@ function update(elapsed) {
 	interval = elapsed - last;
 	frame = getCurrentFrame();
 	fps = (1000/interval)
+  
 	if(fps < 20)
 		console.log("fps", fps, " at frame: ", frame);
 	
