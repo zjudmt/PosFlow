@@ -143,7 +143,6 @@ function init(argument) {
 	frame = 0;
 	map = [];
 	selected = [];
-	// test();
 	initVideo();
 	initSVG();
 	d3.json(source_data.src, function(error, data){
@@ -164,6 +163,7 @@ function update(elapsed) {
 	interval = elapsed - last;
 	frame = getCurrentFrame();
 	fps = (1000/interval)
+  
 	if(fps < 20)
 		console.log("fps", fps, " at frame: ", frame);
 	
