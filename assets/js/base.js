@@ -113,7 +113,7 @@ function initData(data){
 		"selected": "selected",
 		"conflicted": "conflicted"
 	};
-	console.log("initData")
+	console.log("initData: ", data.length)
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
 		data[i]["end_frame"] = data[i].start_frame + data[i].boxes.length - 1;
@@ -138,13 +138,18 @@ function init(argument) {
 		fps: 25,
 		src: "/resources/PosFlow/tracklets.json",
 	}
+	
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
+	colorScale = d3.scaleSequential()
+		.domain([0, 1])
+		.interpolator(d3.interpolateRainbow);
 	frame = 0;
 	map = [];
 	selected = [];
 	initVideo();
 	initSVG();
+
 	d3.json(source_data.src, function(error, data){
 		tracklets = initData(data);
 		cur_data = getTrackletsByFrame(tracklets, 0)

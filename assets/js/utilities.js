@@ -1,6 +1,7 @@
 function getColorByID(ID){
-	let res = md5(ID)
-	let color = "#"+ res.substr(0,6);
+	let res = (ID/Math.PI) - Math.floor(ID/Math.PI)
+	let color = colorScale(res).toString();
+	console.log(color);
 	return color;
 }
 
