@@ -405,44 +405,26 @@ function initControls(){
 			cur_x = mouse[0];
 			if(d.name != "progress_bar")
 				cur_x -= controls_data.progress_bar.x
-			if(cur_x <= controls_data.progress_bar.x ||
-			 cur_x >= controls_data.progress_bar.endpoint.x ){
-				flag_control = false;
-				return;
-			}
+			cur_x = d3.max([cur_x, controls_data.progress_bar.x])
+			cur_x = d3.min([cur_x, controls_data.progress_bar.endpoint.x])
 			newtime = x2time(cur_x)
 			video.property("currentTime",newtime);
-			// controls_data.timebox.current_time = newtime;
 		}
-		// console.log("mousemove");
 	}
-	function mousedown(){
+	function mousedown(d){
 		flag_control = true;
 		mouse = d3.mouse(this);
-		if(mouse[0] <= controls_data.progress_bar.x ||
-		 mouse[0] >= controls_data.progress_bar.endpoint.x)
-			flag_control = false;
-		newtime = x2time(mouse[0])
-		video.property("currentTime",newtime);
-		// console.log("mousedown")
-		// update()
-		// controls_data.timebox.current_time = newtime;
-	}
-
-	function mouseup(d){
-		if(!flag_control)
-			return
-		else
-			mouse = d3.mouse(this);
 		var cur_x = mouse[0]
 		if(d.name != "progress_bar")
 			cur_x -= controls_data.progress_bar.x
 		if(cur_x >= controls_data.progress_bar.x
 		&& cur_x<= controls_data.progress_bar.endpoint.x){
-			newtime = x2time(cur_x)
-			video.property("currentTime",newtime);	
+			newtime = x2time(mouse[0])
+			video.property("currentTime",newtime);
 		}
-		console.log("mouseup", this, d);
+	}
+
+	function mouseup(d){
 		flag_control = false;
 	}
 
