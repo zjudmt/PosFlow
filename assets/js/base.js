@@ -151,28 +151,35 @@ function init(argument) {
 		cur_data = getTrackletsByFrame(tracklets, 0)
 		current_tracklets = cur_data[0];
 		path_tracklets = cur_data[1];
-		range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, 0, past_duration, future_duration)
+		range_trackletsWsVer = cur_data[2];
 		initMonitor();
 		initWorkspace();
 		initBirdseye();
+		last = 0;
 		timer_update = d3.timer(update);
 	})
 }
 
-function update() {
+function update(elapsed) {
+	interval = elapsed - last;
+	// console.log("interval", interval);
+	frame = getCurrentFrame();
+	fps = (1000/interval)
+	if(fps < 20)
+		console.log("fps", fps, " at frame: ", frame);
 	map = [];
 	// selected = [];
-	frame = getCurrentFrame();
-	previous = current_tracklets;
+	// previous = current_tracklets;
 	cur_data = getTrackletsByFrame(tracklets, frame)
 	current_tracklets = cur_data[0];
 	path_tracklets = cur_data[1];
-	range_trackletsWsVer = getTrackletsInRangeWsVer(tracklets, frame, past_duration, future_duration)
+	range_trackletsWsVer = cur_data[2];
 
 	updateLayout();
 	updateWorkspace();
 	updateMonitor();
 	updateBirdseye();
+	last = elapsed;
 }
 
 

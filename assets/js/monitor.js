@@ -76,15 +76,6 @@ function updateMain(){
 	// 通过id选择器选中初始化时创建的 "g"
 	main = d3.select("#players")
 
-	// var path_data = [];
-	// for (var i = current_tracklets.length - 1; i >= 0; i--) {
-	// 	var s = current_tracklets[i].status;
-	// 	if(s == "hover" || s == "selected")
-	// 		path_data.push(current_tracklets[i]);
-	// 	if(path_data.length > 0)
-	// 		console.log("path_data:", path_data)
-	// }
-
 	// 动态绑定数据
 	paths = main.select("#paths")
 		.selectAll("path").data(path_tracklets)
