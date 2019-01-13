@@ -163,12 +163,23 @@ function updateMain(){
 			.y(function(d){return d.y ;});
 		// 根据之前计算的下标,将合适的数据取出来
 		var path_data = [];
-		for (var i = start_index; i < end_index; i++) {
-			var track_point = {
-				x: vid2x(d.boxes[i][0] + d.boxes[i][2]/2) - current_point.x ,
-				y: vid2y(d.boxes[i][1] + d.boxes[i][3]) - current_point.y ,
+		try{
+			for (var i = start_index; i < end_index; i++) {
+				if(!d.boxes[i])
+					continue;
+				var track_point = {
+					x: vid2x(d.boxes[i][0] + d.boxes[i][2]/2) - current_point.x ,
+					y: vid2y(d.boxes[i][1] + d.boxes[i][3]) - current_point.y ,
+				}
+				path_data.push(track_point);
 			}
-			path_data.push(track_point);
+		}
+		catch(err){
+			console.log("start_index:", start_index)
+			console.log("err:", err)
+			console.log("end_index:", end_index)
+			console.log("d.boxes.length:", d.boxes.length)
+			console.log("id: ", d)
 		}
 		return lineGenerator(path_data);
 	}
@@ -286,6 +297,7 @@ function initControls(){
 			total_time: getTimeText( source_video.duration ), current_time: "00:00",
 		},
 		progress_bar: {
+			name: "progress_bar",
 			x: unit * lo.progress_bar.x , y: unit * lo.progress_bar.y ,
 			w: unit * lo.progress_bar.w , h: unit * lo.progress_bar.h ,
 			x2: unit * lo.progress_bar.x,
@@ -395,34 +407,36 @@ function initControls(){
 		progress_bar_watched.attr("x2",function(d){return d.x2})
 	}
 
-	function mousemove(){
+	d3.select("#svg").on("mouseup.controls", mouseup)
+	d3.select("#svg").on("mousemove.controls", mousemove)
+
+	function mousemove(d){
 		if (flag_control) {
 			mouse = d3.mouse(this);
-			console.log("mousemove",mouse);
-			if(mouse[0] <= controls_data.progress_bar.x ||
-			 mouse[0]>= controls_data.progress_bar.endpoint.x )
-				flag_control = false;
-			newtime = x2time(mouse[0])
+			cur_x = mouse[0];
+			if(d.name != "progress_bar")
+				cur_x -= controls_data.progress_bar.x
+			cur_x = d3.max([cur_x, controls_data.progress_bar.x])
+			cur_x = d3.min([cur_x, controls_data.progress_bar.endpoint.x])
+			newtime = x2time(cur_x)
 			video.property("currentTime",newtime);
-			// controls_data.timebox.current_time = newtime;
-
 		}
 	}
-	function mousedown(){
+	function mousedown(d){
 		flag_control = true;
 		mouse = d3.mouse(this);
-		if(mouse[0] <= controls_data.progress_bar.x ||
-		 mouse[0] >= controls_data.progress_bar.endpoint.x)
-			flag_control = false;
-		newtime = x2time(mouse[0])
-		video.property("currentTime",newtime);
-		// update()
-		// controls_data.timebox.current_time = newtime;
+		var cur_x = mouse[0]
+		if(d.name != "progress_bar")
+			cur_x -= controls_data.progress_bar.x
+		if(cur_x >= controls_data.progress_bar.x
+		&& cur_x<= controls_data.progress_bar.endpoint.x){
+			newtime = x2time(mouse[0])
+			video.property("currentTime",newtime);
+		}
 	}
 
-	function mouseup(){
+	function mouseup(d){
 		flag_control = false;
-		update()
 	}
 
 	function clickPlay(){

@@ -45,6 +45,16 @@ path{
 
 path.conflicted{
 	cursor: default;
+	stroke-opacity: 0;
+}
+
+.selected{
+	stroke-opacity: 1;
+}
+
+.default{
+	stroke-opacity: 0.5;
+	fill-opacity: 0.5;
 }
 
 #players rect{
@@ -58,26 +68,9 @@ path.conflicted{
 #players rect.conflicted {
 	cursor: not-allowed;
 }
-#players .hover{
+.hover{
 	stroke-opacity: 1;
 }
-
-#players .default{
-	stroke-opacity: 0.5;
-}
-
-#players path.default{
-	stroke-opacity: 0;
-}
-
-#players .selected{
-	stroke-opacity: 1;
-}
-
-#players path.conflicted{
-	stroke-opacity: 0;
-}
-
 
 #controls rect{
 	stroke-width: 0;
@@ -100,6 +93,7 @@ path.conflicted{
     font-size: 16pt;
     fill-opacity: 0.9;
 }
+
 
 .button{
     cursor: pointer;
@@ -146,21 +140,8 @@ path.conflicted{
 	opacity: 0.9;
 }
 
-
-#birdseye_paths path.selected{
-	opacity: 1;
-}
-
-#birdseye_paths path.hover{
-	opacity: 0.5;
-}
-
-#birdseye_paths path.default{
-	opacity: 0;
-}
-
-#birdseye_paths path.conflicted{
-	opacity: 0;
+#birdseye image{
+	opacity: 0.3;
 }
 
 .birdseye_circle{
