@@ -269,6 +269,7 @@ function updateWorkspace(){
 		})
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
 		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
+		.attr("stroke-dasharray", dashGenerator)
 		.attr("clip-path","url(#ws-clipPath2)")
 		.attr("stroke",function(d){return d.color})
 		.attr("stroke-width",thickness_line)
@@ -296,6 +297,7 @@ function updateWorkspace(){
 		.attr("x2",function(d){return width_graph*(d.end_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
 		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
+		.attr("stroke-dasharray", dashGenerator)
 		.attr("clip-path","url(#ws-clipPath)")
 		.attr("stroke",function(d){
 			if(d.status == "conflicted")
@@ -306,7 +308,11 @@ function updateWorkspace(){
 		.on("click",selectTracklet)
 		.on("mouseover",function(d){setStatus(d.id, "hover")})
 		.on("mouseout",function(d){setStatus(d.id, "default")})
+	
+	function dashGenerator(d){
 		
+
+	}
 
 	
 	// sgroups.append("line")

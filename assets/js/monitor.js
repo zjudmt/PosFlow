@@ -76,9 +76,19 @@ function updateMain(){
 	// 通过id选择器选中初始化时创建的 "g"
 	main = d3.select("#players")
 
+	// var path_data = [];
+	// for (var i = current_tracklets.length - 1; i >= 0; i--) {
+	// 	var s = current_tracklets[i].status;
+	// 	if(s == "hover" || s == "selected")
+	// 		path_data.push(current_tracklets[i]);
+	// 	if(path_data.length > 0)
+	// 		console.log("path_data:", path_data)
+	// }
+
 	// 动态绑定数据
 	paths = main.select("#paths")
-		.selectAll("path").data(current_tracklets)
+		.selectAll("path").data(path_tracklets)
+
 	rects = main.select("#rects")
 		.selectAll("rect").data(current_tracklets)
 	// 如果有多的元素就remove掉
@@ -95,7 +105,10 @@ function updateMain(){
 	paths.attr("transform", pathBasepoint)
 		.attr("class", function(d){
 				return d.status + " main";
-		})	
+		})
+		.attr("id", function(d){
+			return "path_"+d.id;
+		})
 		.attr("d", trackGenerator)
 		.attr("stroke", function(d){
 			if(d.status == "conflicted")
@@ -108,6 +121,9 @@ function updateMain(){
 	rects.attr("transform", getPlayerTransform)
 		.attr("class", function(d){
 			return d.status + " main";
+		})
+		.attr("id", function(d){
+			return "rect_"+d.id;
 		})
 		.attr("width", getPlayerRectWidth)
 		.attr("height", getPlayerRectHeight)

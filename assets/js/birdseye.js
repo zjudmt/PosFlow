@@ -43,7 +43,7 @@ function updateBirdseye(){
 	// select all circles in birdseye view 
 	var paths = birdseyeLayout.select("#birdseye_paths")
 							.selectAll("path")
-							.data(current_tracklets)
+							.data(path_tracklets);
 	// fit the numbers of elements with the data
 	paths.exit().remove()
 	paths.enter().append("path")
@@ -57,7 +57,8 @@ function updateBirdseye(){
 	 	.attr("d", trackGenerator)
 		.attr("stroke", function(d){
 			return d["color"];
-		});
+		})
+		// .attr("stroke-dasharray", dashArrayGenerator);
 
 	// select all circles in birdseye view 
 	var circles = birdseyeLayout.select("#birdseye_circles")
@@ -130,12 +131,13 @@ function updateBirdseye(){
 								return yScale(d.y);
 							});
 
-		var start_index = d3.max([0, frame-d["start_frame"]-past_duration]);
-		start_index = d3.min([start_index, d.boxes.length - 1]);
+		var start_index = frame-d["start_frame"]-past_duration
+		start_index = d3.min([start_index, d["boxes"].length-1-past_duration]);
+		start_index = d3.max([0, start_index]);
 
-		var end_index = frame - d["start_frame"];
-		end_index = d3.min([end_index+future_duration, d.boxes.length - 1]);
-		end_index = d3.max([0, end_index]);
+		var end_index = frame - d["start_frame"] + future_duration;
+		end_index = d3.max([0, end_index])
+		end_index = d3.min([end_index, d["boxes"].length-1]);
 
 		var path_data = [];
 		for(var i = start_index; i < end_index; ++i){
@@ -146,13 +148,13 @@ function updateBirdseye(){
 
 	// ["interpolation"][i][0] for start frame and ["interpolation"][j][1] for end frame
 	function dashArrayGenerator(d){
-		// start
-		var start_index = d3.max([0, frame-d["start_frame"]-past_duration]);
-		start_index = d3.min([start_index, d.boxes.length - 1]);
-		// end
-		var end_index = frame - d["start_frame"];
-		end_index = d3.min([end_index+future_duration, d.boxes.length - 1]);
-		end_index = d3.max([0, end_index]);
+		var start_index = frame-d["start_frame"]-past_duration
+		start_index = d3.min([start_index, d["boxes"].length-1-past_duration]);
+		start_index = d3.max([0, start_index]);
+
+		var end_index = frame - d["start_frame"] + future_duration;
+		end_index = d3.max([0, end_index])
+		end_index = d3.min([end_index, d["boxes"].length-1]);
 
 		var dash_index = d["interpolation"].length;
 		for(var i = 0, len = d["interpolation"].length; i < len; ++i){
@@ -172,11 +174,11 @@ function updateBirdseye(){
 			var dy = yScale(cur_pos.y)-yScale(pre_pos.y);
 			pixel_length += Math.sqrt(dx*dx, dy*dy);
 
-			if(d["start_frame"]+start_index == d["interpolation"][0]){
+			if(d["start_frame"]+start_index == d["interpolation"][dash_index][0]){
 				dash_str += String(pixel_length)+",";
 				pixel_length = 0;
 			}
-			else if(d["start_frame"]+start_index == d["interpolation"][1]){
+			else if(d["start_frame"]+start_index == d["interpolation"][dash_index][1]){
 				var m = Math.floor(pixel_length/unit_length);
 				dash_str += String(0)+",";
 				for(var i = 0; i < m; ++i){
@@ -190,6 +192,7 @@ function updateBirdseye(){
 				pixel_length = 0;
 			}
 			pre_pos = cur_pos;
+			console.log("main loop")
 		}
 		for(var i = start_index; i < end_index; ++i){
 			var cur_pos = birdseyeTransition(d["boxes"][i]);
@@ -199,7 +202,8 @@ function updateBirdseye(){
 			pre_pos = cur_pos;
 		}
 		dash_str += String(pixel_length);
-		// console.log(dash_str);
+		if(d["status"] == "selected")
+			console.log(dash_str);
 		return dash_str;
 	}
 }
