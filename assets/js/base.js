@@ -10,7 +10,6 @@ function initLayout(argument) {
 	// on my laptop w = 1536, h = 864 w/h = 48/27
 		scale: window.innerWidth / 1536,
 	};
-	console.log("viewport: ", viewport);
 	viewBox = {
 		x : 0,
 		y : 0,
@@ -101,9 +100,6 @@ function initLayout(argument) {
 			h: row[3].h ,
 		},
 	}
-
-	console.log("layout: ", layout);
-	console.log("basepoint: ", basepoint);
 }
 
 function initData(data){
@@ -124,8 +120,17 @@ function initData(data){
 	return data;
 }
 
+function test() {
+	var ar = []
+	for (var i = 10 - 1; i >= 0; i--) {
+		ar.push(i);
+	}
+	console.log(ar);
+}
+
 
 function init(argument) {
+	// test();
 	initLayout();
 	source_video = {
 		w: 3840,
@@ -169,7 +174,7 @@ function update(elapsed) {
 	frame = getCurrentFrame();
 	fps = (1000/interval)
   
-	if(fps < 20)
+	if(fps < 10)
 		console.log("fps", fps, " at frame: ", frame);
 	
 	map = [];

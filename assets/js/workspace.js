@@ -314,13 +314,15 @@ function updateWorkspace(){
 	}
 
 	function t_dashGenerator(d){
+		if(!d["interpolation"][0])
+			return "";
 		// 找能显示长方形的端点时间[t1, t2]
 		var t1 = d["start_frame"];
 		var t2 = d["end_frame"];
 		// var t2 = d3.min([d["end_frame"], frame+future_duration]);
 		// 找到虚线可能的起始点， 找不到为数组长度
 		var dash_index = d["interpolation"].length;
-		for(var i = 0, len = d["interpolation"].length; i < len; ++i){
+		for(var i = 0; i < d["interpolation"].length; ++i){
 			if(t1 < d["interpolation"][i][1]){
 				dash_index = i;
 				break;
@@ -374,6 +376,8 @@ function updateWorkspace(){
 	}
 
 	function s_dashGenerator(d){
+		if(!d["interpolation"][0])
+			return "";
 		// 找能显示长方形的端点时间[t1, t2]
 		var t1 = d["start_frame"];
 		if(d["end_frame"] < frame-past_duration+25){
@@ -386,7 +390,7 @@ function updateWorkspace(){
 			t1 = frame-past_duration;
 		}
 		var t2 = d["end_frame"];
-		console.log(t1,t2)
+		// console.log(t1,t2)
 
 		// 找到虚线可能的起始点， 找不到为数组长度
 		var dash_index = d["interpolation"].length;

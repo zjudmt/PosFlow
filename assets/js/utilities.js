@@ -1,7 +1,6 @@
 function getColorByID(ID){
 	let res = (ID/Math.PI) - Math.floor(ID/Math.PI)
 	let color = colorScale(res).toString();
-	console.log(color);
 	return color;
 }
 
@@ -113,10 +112,6 @@ function merge(){
 	var tracklet1=selected[0],
 		tracklet2=selected[1];
 
-	tracklet1.status="selected"
-	tracklet2.status="selected"
-	console.log(tracklet1)
-	console.log(tracklet2)
 	//两个box作为关键帧
 	var box1=tracklet1.boxes[tracklet1.boxes.length-1],
 		box2=tracklet2.boxes[0],
@@ -129,7 +124,6 @@ function merge(){
 		for(var j=0;j<4;j++){
 			tempbox.push(Math.round((1-w)*box1[j]+w*box2[j]))
 		}
-		// tempbox.push(0)//插值后面多加个0
 		tracklet1.boxes.push(tempbox);
 	}
 	tracklet1.interpolation.push([tracklet1.end_frame+1,tracklet2.start_frame-1])//插值数组添加
@@ -158,7 +152,6 @@ function merge(){
 		}
 	selected.splice(1,1)
 
-	console.log(tracklet1)
 }
 
 function cutline(){
