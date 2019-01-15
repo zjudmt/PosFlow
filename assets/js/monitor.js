@@ -142,17 +142,12 @@ function updateMain(){
 	// 路径生成器
 	function trackGenerator(d){
 		// 首先做判断,保证不会出现数组越界,同时尽可能至少保留5秒信息
-		var end_index = frame - d.start_frame + future_duration;
-		end_index = d3.max([0, end_index])
-		end_index = d3.min([end_index, d.boxes.length - 1]);
-		var start_index = frame - d.start_frame - past_duration
+		var end_index = indexS(frame - d.start_frame + future_duration, d);
+		var start_index = indexS(frame - d.start_frame - past_duration, d);
 		start_index = d3.min([start_index, d.boxes.length - 1 - past_duration]);
-		start_index = d3.max([0, start_index]);
 
 		// 以当前帧(保护过的)作为基准点
-		var cur_frame = frame - d.start_frame;
-		cur_frame = d3.min([cur_frame, d.boxes.length - 1]);
-		cur_frame = d3.max([0, cur_frame])
+		var cur_frame = indexS(frame - d.start_frame, d);
 		var current_point = {
 			x: vid2x( d.boxes[cur_frame][0] + d.boxes[cur_frame][2] / 2 ),
 			y: vid2y( d.boxes[cur_frame][1] + d.boxes[cur_frame][3] ),
@@ -185,9 +180,7 @@ function updateMain(){
 	}
 
 	function pathBasepoint(d) {
-		var index = frame - d.start_frame;
-		index = d3.min([index, d.boxes.length - 1]);
-		index = d3.max([index, 0]);
+		var index = indexS(frame - d.start_frame, d);
 		var current_point = {
 			x: vid2x(d.boxes[index][2] / 2 ),
 			y: vid2y(d.boxes[index][3] ),
@@ -201,9 +194,7 @@ function updateMain(){
 }
 // 各种取位移或者尺寸函数,都需要进行坐标保护
 function getPlayerTransform(d) {
-	var index = frame-d["start_frame"];
-	index = d3.min([index, d["boxes"].length-1]);
-	index = d3.max([0, index])
+	var index = indexS(frame-d["start_frame"], d);
 	var pos = d["boxes"][index];
 	var str = "translate(" + vid2x(pos[0]) +
 	" , " + vid2y(pos[1]) + ")";
@@ -211,9 +202,7 @@ function getPlayerTransform(d) {
 }
 
 function getPlayerRectWidth(d) {
-	var index = frame-d["start_frame"];
-	index = d3.min([index, d["boxes"].length-1]);
-	index = d3.max([0, index])
+	var index = indexS(frame-d["start_frame"], d);
 	var pos = d["boxes"][index];
 	var w = vid2w(pos[2])
 	// console.log(w);
@@ -221,9 +210,7 @@ function getPlayerRectWidth(d) {
 }
 
 function getPlayerRectHeight(d) {
-	var index = frame-d["start_frame"];
-	index = d3.min([index, d["boxes"].length-1]);
-	index = d3.max([0, index])
+	var index = indexS(frame-d["start_frame"], d);
 	var pos = d["boxes"][index];
 	var h = vid2h(pos[3])
 	// console.log(d, h);

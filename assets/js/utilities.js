@@ -282,3 +282,9 @@ function save(){
 
 }
 
+function indexS(index, d) {
+	index = d3.min([index, d["boxes"].length-1]);
+	index = d3.max([0, index])
+	return index;
+}
+
