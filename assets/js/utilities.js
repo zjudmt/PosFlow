@@ -101,6 +101,11 @@ function getCurrentFrame(){
 	return Math.floor(d3.select("#video").property("currentTime")*source_video.fps);
 }
 
+function trash(){
+	console.log(d3.select("#wsbuttong-1").selectAll(".enable").size())
+
+}
+
 function merge(){
 
 	console.log(d3.select("#wsbuttong-1").selectAll(".enable").size())

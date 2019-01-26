@@ -7,6 +7,7 @@ function initWorkspace(){
 	
 	var img_list=["/resources/PosFlow/img/chain.png",
 	"/resources/PosFlow/img/chain-broken.png",
+	"/resources/PosFlow/img/trash.png",
 	"/resources/PosFlow/img/upload.png",
 	"/resources/PosFlow/img/download.png"]
 
@@ -58,18 +59,20 @@ function initWorkspace(){
 	// var button_merge= buttonarea.select("#wsbutton-1")
 	buttonarea.select("#wsbutton-1").append("title").text("merge")
 	buttonarea.select("#wsbutton-2").append("title").text("cut")
-	buttonarea.select("#wsbutton-3").append("title").text("load")
-	buttonarea.select("#wsbutton-4").append("title").text("save")
+	buttonarea.select("#wsbutton-3").append("title").text("delete")
+	buttonarea.select("#wsbutton-4").append("title").text("load")
+	buttonarea.select("#wsbutton-5").append("title").text("save")
 
-	buttonarea.select("#wsbutton-3").classed("enable",true)
 	buttonarea.select("#wsbutton-4").classed("enable",true)
+	buttonarea.select("#wsbutton-5").classed("enable",true)
 	
 	buttonarea.select("#wsbutton-1").on("click",merge)
 	buttonarea.select("#wsbutton-2").on("click",cutline)
-	buttonarea.select("#wsbutton-3")
+	buttonarea.select("#wsbutton-3").on("click",trash)
+	buttonarea.select("#wsbutton-4")
 		.attr("type","file")
 		.on("click",load)
-	buttonarea.select("#wsbutton-4").on("click",save)
+	buttonarea.select("#wsbutton-5").on("click",save)
 
 
 
@@ -184,6 +187,7 @@ function updateWorkspace(){
 	var height_workspace=layout.workspace.h//ws高度
 	var img_list=["/resources/PosFlow/img/chain.png",
 	"/resources/PosFlow/img/chain-broken.png",
+	"/resources/PosFlow/img/trash.png",
 	"/resources/PosFlow/img/upload.png",
 	"/resources/PosFlow/img/download.png"]
 	var width_buttonarea=height_workspace/img_list.length
