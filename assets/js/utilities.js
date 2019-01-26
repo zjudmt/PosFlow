@@ -163,17 +163,24 @@ function cutline(){
 
 	var tracklet1=selected[0]
 	//获取interpolation中位置
-	var index_inter
-	for(var i=0;i<tracklet1.interpolation.length;i++){
 
+	var index_inter = -1, old_end, new_start
+	var new_end = tracklet1.end_frame;
+	for(var i=0;i<tracklet1.interpolation.length;i++){
 		if(frame>=tracklet1.interpolation[i][0]&&frame<=tracklet1.interpolation[i][1]){
-			index_inter=i
-			console.log(index_inter)
+			index_inter=i;
+			break;
 		}
 	}
-	if(i==tracklet1.interpolation.length)
-		console.log("not in range")
-	
+
+	if(index_inter == -1){
+		old_end = frame - 1;
+		new_start = frame + 1;
+		console.log("solid cut")
+	}else{
+		new_start = tracklet1.interpolation[index_inter][1] + 1;
+		old_end = tracklet1.interpolation[index_inter][0] - 1;
+	}
 
 	// console.log(tracklet1)
 	// console.log(index_inter)
@@ -182,8 +189,8 @@ function cutline(){
 	tracklet2.id=setNewId()
 	tracklet2.color=getColorByID(tracklet2.id)
 	//调整end_frame和start_frame
-	tracklet2.start_frame=tracklet1.interpolation[index_inter][1]+1
-	tracklet2.end_frame=tracklet1.end_frame
+	tracklet2.start_frame = new_start;
+	tracklet2.end_frame = new_end;
 	//分离interpolation
 	tracklet2.interpolation=[]
 	for(var i=0;i<tracklet1.interpolation.length;i++){
@@ -199,7 +206,7 @@ function cutline(){
 
 	//剪切旧tracklet
 	//调整end_frame
-	tracklet1.end_frame=tracklet1.interpolation[index_inter][0]-1
+	tracklet1.end_frame = old_end;
 	//分离interpolation
 	for(var i=0;i<tracklet1.interpolation.length;i++){
 		if(tracklet1.interpolation[i][0]>=tracklet1.end_frame)

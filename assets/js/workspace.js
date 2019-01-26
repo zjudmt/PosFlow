@@ -226,11 +226,14 @@ function updateWorkspace(){
 	cut_button.classed("enable",false);
 	if(selected.length==1){
 		var tracklet_temp=selected[0]
-		for(var i=0;i<tracklet_temp.interpolation.length;i++){
-			if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
-				cut_button.classed("enable",true)
-			}
-		}
+		if (frame > tracklet_temp.start_frame && frame < tracklet_temp.end_frame)
+			cut_button.classed("enable",true);
+		// for(var i=0;i<tracklet_temp.interpolation.length;i++){
+		// 	if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
+		// 		cut_button.classed("enable",true);
+		// 		break;
+		// 	}
+		// }
 	}
 
 
