@@ -7,6 +7,7 @@ function initWorkspace(){
 	
 	var img_list=["/resources/PosFlow/img/chain.png",
 	"/resources/PosFlow/img/chain-broken.png",
+	"/resources/PosFlow/img/trash.png",
 	"/resources/PosFlow/img/upload.png",
 	"/resources/PosFlow/img/download.png"]
 
@@ -58,18 +59,20 @@ function initWorkspace(){
 	// var button_merge= buttonarea.select("#wsbutton-1")
 	buttonarea.select("#wsbutton-1").append("title").text("merge")
 	buttonarea.select("#wsbutton-2").append("title").text("cut")
-	buttonarea.select("#wsbutton-3").append("title").text("load")
-	buttonarea.select("#wsbutton-4").append("title").text("save")
+	buttonarea.select("#wsbutton-3").append("title").text("delete")
+	buttonarea.select("#wsbutton-4").append("title").text("load")
+	buttonarea.select("#wsbutton-5").append("title").text("save")
 
-	buttonarea.select("#wsbutton-3").classed("enable",true)
 	buttonarea.select("#wsbutton-4").classed("enable",true)
+	buttonarea.select("#wsbutton-5").classed("enable",true)
 	
 	buttonarea.select("#wsbutton-1").on("click",merge)
 	buttonarea.select("#wsbutton-2").on("click",cutline)
-	buttonarea.select("#wsbutton-3")
+	buttonarea.select("#wsbutton-3").on("click",trash)
+	buttonarea.select("#wsbutton-4")
 		.attr("type","file")
 		.on("click",load)
-	buttonarea.select("#wsbutton-4").on("click",save)
+	buttonarea.select("#wsbutton-5").on("click",save)
 
 
 
@@ -184,6 +187,7 @@ function updateWorkspace(){
 	var height_workspace=layout.workspace.h//ws高度
 	var img_list=["/resources/PosFlow/img/chain.png",
 	"/resources/PosFlow/img/chain-broken.png",
+	"/resources/PosFlow/img/trash.png",
 	"/resources/PosFlow/img/upload.png",
 	"/resources/PosFlow/img/download.png"]
 	var width_buttonarea=height_workspace/img_list.length
@@ -216,26 +220,28 @@ function updateWorkspace(){
 
 	merge_button=d3.select("#wsbutton-1")
 	cut_button=d3.select("#wsbutton-2")
+	trash_button=d3.select("#wsbutton-3")
+
+	cut_button.classed("enable",false);
+	trash_button.classed("enable",false);
 
 	if(selected.length==2)
 		merge_button.classed("enable",true)
-	else
+	else{
 		merge_button.classed("enable",false)
-
-	
-	cut_button.classed("enable",false);
-	if(selected.length==1){
-		var tracklet_temp=selected[0]
-		if (frame > tracklet_temp.start_frame && frame < tracklet_temp.end_frame)
-			cut_button.classed("enable",true);
-		// for(var i=0;i<tracklet_temp.interpolation.length;i++){
-		// 	if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
-		// 		cut_button.classed("enable",true);
-		// 		break;
-		// 	}
-		// }
+		if(selected.length==1){
+			trash_button.classed("enable", true)	
+			var tracklet_temp=selected[0]
+			if (frame > tracklet_temp.start_frame && frame < tracklet_temp.end_frame)
+				cut_button.classed("enable",true);
+			// for(var i=0;i<tracklet_temp.interpolation.length;i++){
+			// 	if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
+			// 		cut_button.classed("enable",true);
+			// 		break;
+			// 	}
+			// }
+		}
 	}
-
 
 
 	var sgroups=area_selected.selectAll("line")

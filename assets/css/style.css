@@ -171,3 +171,11 @@ path.conflicted{
 #wsbutton-2.enable{
 	cursor: pointer;
 }
+
+#wsbutton-3{
+	cursor: not-allowed;
+}
+
+#wsbutton-3.enable{
+	cursor: pointer;
+}
