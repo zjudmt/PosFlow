@@ -220,26 +220,28 @@ function updateWorkspace(){
 
 	merge_button=d3.select("#wsbutton-1")
 	cut_button=d3.select("#wsbutton-2")
+	trash_button=d3.select("#wsbutton-3")
+
+	cut_button.classed("enable",false);
+	trash_button.classed("enable",false);
 
 	if(selected.length==2)
 		merge_button.classed("enable",true)
-	else
+	else{
 		merge_button.classed("enable",false)
-
-	
-	cut_button.classed("enable",false);
-	if(selected.length==1){
-		var tracklet_temp=selected[0]
-		if (frame > tracklet_temp.start_frame && frame < tracklet_temp.end_frame)
-			cut_button.classed("enable",true);
-		// for(var i=0;i<tracklet_temp.interpolation.length;i++){
-		// 	if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
-		// 		cut_button.classed("enable",true);
-		// 		break;
-		// 	}
-		// }
+		if(selected.length==1){
+			trash_button.classed("enable", true)	
+			var tracklet_temp=selected[0]
+			if (frame > tracklet_temp.start_frame && frame < tracklet_temp.end_frame)
+				cut_button.classed("enable",true);
+			// for(var i=0;i<tracklet_temp.interpolation.length;i++){
+			// 	if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
+			// 		cut_button.classed("enable",true);
+			// 		break;
+			// 	}
+			// }
+		}
 	}
-
 
 
 	var sgroups=area_selected.selectAll("line")

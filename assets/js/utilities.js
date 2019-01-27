@@ -103,7 +103,10 @@ function getCurrentFrame(){
 
 function trash(){
 	console.log(d3.select("#wsbuttong-1").selectAll(".enable").size())
-
+	var garbage = selected[0];
+	var index_g = getIndexbyID(garbage.id);
+	tracklets.splice(index_g, 1);
+	selected.splice(0, 1);
 }
 
 function merge(){
@@ -143,19 +146,15 @@ function merge(){
 		tracklet1.interpolation.push(tracklet2.interpolation[i])
 	tracklet1.interpolation.sort(function(a,b){return a[0]-b[0]})
 
-	
 	//存入第一个tracklet
-	for (var i = tracklets.length - 1; i >= 0; i--) {
-			if(tracklets[i].id == tracklet1.id)
-				tracklets.splice(i,1,tracklet1);
-		}
-
+	var index_t1 = getIndexbyID(tracklet1.id);
+	tracklets.splice(index_t1,1,tracklet1);
+	
 	//删除后一个tracklets
-	for (var i = tracklets.length - 1; i >= 0; i--) {
-			if(tracklets[i].id == tracklet2.id)
-				tracklets.splice(i,1);
-		}
-	selected.splice(1,1)
+	var index_t2 = getIndexbyID(tracklet2.id);
+	tracklets.splice(index_t2,1);
+
+	selected.splice(1,1);
 
 }
 
