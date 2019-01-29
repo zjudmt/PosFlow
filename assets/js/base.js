@@ -109,7 +109,6 @@ function initData(data){
 		"selected": "selected",
 		"conflicted": "conflicted"
 	};
-	console.log("initData: ", data.length)
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
 		data[i]["end_frame"] = data[i].start_frame + data[i].boxes.length - 1;
@@ -119,6 +118,65 @@ function initData(data){
 	}
 	return data;
 }
+
+function filterData(data){
+	min_frames = 5;
+	for(var i = 0; i < data.length; ++i){
+		var flag = false;
+		// tracklet时间不能短于5帧
+		if(data[i]["end_frame"]-data[i]["start_frame"] < min_frames){
+			flag = true;	
+		}
+		// 球员开始的位置和结束及中间三个的位置一共五个位置至少有一个在场内
+		else
+		{
+			var count = 0;
+			var end_index = d3.max([0, data[i]["boxes"].length-1]);
+			for(var j = 0; j < 5; ++j){
+				if(!inField(data[i]["boxes"][Math.floor(j*end_index/4)])){
+					count++;
+				}
+				else{
+					break;
+				}
+			}
+			if(count == 5){
+				flag = true;
+			}
+		}
+		// 如果tracklet少于5帧，或被判断在场外，就从预处理数据中删掉
+		if(flag == true){
+			data.splice(i,1);
+			--i;
+		}
+	}
+	return data;
+}
+
+function inField(box){
+	field_corners = [{x:1050, y:235}, {x:2783, y:235}, {x:3800, y:785}, {x:56, y:785}];
+
+	var player = {x:box[0]+box[2]/2, y:box[1]+box[3]};
+
+	var degree_sum = 0;
+	for(var i = 0; i < 4; ++i){
+		var edge_vec1 = {x:player.x-field_corners[i].x, y:player.y-field_corners[i].y};
+		var edge_vec2 = {x:player.x-field_corners[(i+1)%4].x, y:player.y-field_corners[(i+1)%4].y};
+		var norm1 = Math.sqrt(dotProduct(edge_vec1, edge_vec1));
+		var norm2 = Math.sqrt(dotProduct(edge_vec2, edge_vec2));
+		// at the corner, prevent dividing zero.
+		if(norm1==0 || norm2==0)
+			return true;
+		var product = dotProduct(edge_vec1,edge_vec2)/(norm1*norm2);
+		degree_sum += Math.acos(product);
+	}
+	return degree_sum < 2*Math.PI-0.01 ? false : true;
+}
+
+function dotProduct(vec1, vec2){
+	return vec1.x*vec2.x+vec1.y*vec2.y;
+}
+
 
 function test() {
 	var ar = []
@@ -156,7 +214,9 @@ function init(argument) {
 	initSVG();
 
 	d3.json(source_data.src, function(error, data){
+		data = filterData(data);
 		tracklets = initData(data);
+		// tracklets = filterData(tracklets);
 		cur_data = getTrackletsByFrame(tracklets, 0)
 		current_tracklets = cur_data[0];
 		path_tracklets = cur_data[1];
