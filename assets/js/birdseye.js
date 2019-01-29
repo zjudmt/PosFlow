@@ -34,10 +34,10 @@ function updateBirdseye(){
 	var padding = {left:30, right:30, top:20, bottom:20};
 
 	var xScale = d3.scaleLinear()
-					.domain([-16, 110])
+					.domain([-12, 107])
 					.range([x, x+width-padding.left-padding.right]);
 	var yScale = d3.scaleLinear()
-				.domain([5, 70])
+				.domain([0, 68])
 				.range([y+height-padding.bottom, y+padding.top]);
 
 	// select all circles in birdseye view 
@@ -124,8 +124,8 @@ function updateBirdseye(){
 	// change the data from the pixels in screen to the real play field
 	// that is [0,3840] * [0,800] ----> [0,105]*[0,68] + outside
 	function birdseyeTransition(box){
-		var x = box[0];
-		var y = box[1];
+		var x = box[0]+box[2]/2;
+		var y = box[1]+box[3];
 		var x_ab = 28.683*(x-1890)/(y+228)+51.7317;
 		var y_ab = 54835.2/(228+y)-54.4;
 		return {x:x_ab, y:y_ab};
@@ -151,8 +151,6 @@ function updateBirdseye(){
 
 		var path_data = [];
 		for(var i = start_index; i < end_index; ++i){
-			// if(!d.boxes[i])
-			// 	continue;
 			try{
 				path_data.push(birdseyeTransition(d["boxes"][i]));
 			}
