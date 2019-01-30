@@ -100,6 +100,7 @@ function initLayout(argument) {
 			h: row[3].h ,
 		},
 	}
+	rect_hide=-1;
 }
 
 function initData(data){
@@ -421,6 +422,10 @@ function initKeyBoardEvent(){
         // 按 Ctrl + - 缩小
         else if(e && event.ctrlKey && e.keyCode==101){
             console.log("Ctrl + -: to be finished");
+
+        }
+        else if(e && e.keyCode==72){
+            rect_hide=-rect_hide;
 
         }
 	};

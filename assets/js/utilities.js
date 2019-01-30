@@ -227,6 +227,14 @@ function cutline(){
 	// console.log(tracklet2)
 }
 
+function exchange(){
+	console.log(d3.selectAll(".enable").size())
+	if(d3.select("#wsbuttong-3").selectAll(".enable").size()==0)//改成0
+		return 0;
+	console.log("exchange")
+
+}
+
 function setNewId(){
 	//设置新ID
 	var maxid=0;
