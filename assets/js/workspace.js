@@ -293,7 +293,7 @@ function updateWorkspace(){
 		
 	tgroups.attr("id",function(d){return "ts_"+d.id})
 		.attr("class", function(d){return d.status + " workspace"})
-		.attr("x1",function(d){return width_graph*(d.start_frame-(frame-past_duration))/(past_duration+future_duration)})
+		.attr("x1",function(d){return width_graph *(d.start_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("x2",function(d){return width_graph*(d.end_frame-(frame-past_duration))/(past_duration+future_duration)})
 		.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
 		.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
