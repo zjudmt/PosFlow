@@ -72,7 +72,7 @@ function getTrackletsByFrame(data, frame){
 		for (var j = selected.length - 1; j >= 0; j--) {
 			var max_start = d3.max( [selected[j].start_frame, start_frame] )
 			var min_end = d3.min( [selected[j].end_frame, end_frame] ) 
-			if( max_start < min_end && data[i].status != "selected" ) {
+			if( max_start <= min_end && data[i].status != "selected" ) {
 				flag_conflicted = true;
 				// console.log("max_start", max_start, "min_end", min_end)
 			}
@@ -120,21 +120,25 @@ function merge(){
 	var tracklet1=selected[0],
 		tracklet2=selected[1];
 
-	//两个box作为关键帧
-	var box1=tracklet1.boxes[tracklet1.boxes.length-1],
-		box2=tracklet2.boxes[0],
-		num_newboxes=tracklet2.start_frame-tracklet1.end_frame-1;
 
-	//生成中间box
-	for(var i=0;i<num_newboxes;i++){
-		var w=(i+1)/(num_newboxes+1)//权重
-		var tempbox=[]
-		for(var j=0;j<4;j++){
-			tempbox.push(Math.round((1-w)*box1[j]+w*box2[j]))
+	if(tracklet1.end_frame<tracklet2.start_frame-1){//是否无缝贴合
+		//两个box作为关键帧
+		var box1=tracklet1.boxes[tracklet1.boxes.length-1],
+			box2=tracklet2.boxes[0],
+			num_newboxes=tracklet2.start_frame-tracklet1.end_frame-1;
+
+		//生成中间box
+		for(var i=0;i<num_newboxes;i++){
+			var w=(i+1)/(num_newboxes+1)//权重
+			var tempbox=[]
+			for(var j=0;j<4;j++){
+				tempbox.push(Math.round((1-w)*box1[j]+w*box2[j]))
+			}
+			tracklet1.boxes.push(tempbox);
 		}
-		tracklet1.boxes.push(tempbox);
+		tracklet1.interpolation.push([tracklet1.end_frame+1,tracklet2.start_frame-1])//插值数组添加
+
 	}
-	tracklet1.interpolation.push([tracklet1.end_frame+1,tracklet2.start_frame-1])//插值数组添加
 
 	//复制后一个tracklet
 	for(var i=0;i<tracklet2.boxes.length;i++){
@@ -178,7 +182,7 @@ function cutline(){
 	}
 
 	if(index_inter == -1){
-		old_end = frame - 1;
+		old_end = frame;
 		new_start = frame + 1;
 		console.log("solid cut")
 	}else{
