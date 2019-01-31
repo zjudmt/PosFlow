@@ -354,7 +354,7 @@ function updateWorkspace(){
 				count++;
 			}
 			// 找到虚线终点，处理虚线
-			else if(t == d["interpolation"][dash_index][1]){
+			if(t == d["interpolation"][dash_index][1]){
 				var dash_end_t = d["interpolation"][dash_index][0];
 				if(count == 0){
 					dash_end_t = t1;
@@ -426,7 +426,7 @@ function updateWorkspace(){
 				count++;
 			}
 			// 找到虚线终点，处理虚线
-			else if(t == d["interpolation"][dash_index][1]){
+			if(t == d["interpolation"][dash_index][1]){
 				var dash_end_t = d["interpolation"][dash_index][0];
 				if(count == 0){
 					dash_end_t = t1;
