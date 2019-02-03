@@ -425,6 +425,7 @@ function initKeyBoardEvent(){
 
         }
         else if(e && e.keyCode==72){
+        	// 'H'
             rect_hide=-rect_hide;
 
         }

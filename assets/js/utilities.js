@@ -301,7 +301,7 @@ function readLocalFile () {
 
 function save(){
 	var blob = new Blob([JSON.stringify(tracklets)], { type: "" });
-	saveAs(blob, "tracklets.json");
+	saveAs(blob, "Germany_tracklets.json");
 
 }
 
