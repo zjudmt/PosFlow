@@ -100,6 +100,12 @@ function initLayout(argument) {
 			h: row[3].h ,
 		},
 	}
+
+	zoom = {
+		scale: 1,
+		x: 0,
+		y: 0
+	}
 }
 
 function initData(data){
@@ -201,7 +207,6 @@ function init(argument) {
 		fps: 25,
 		src: "/resources/PosFlow/Germany_tracklets.json",
 	}
-	
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
 	colorScale = d3.scaleSequential()
@@ -280,9 +285,13 @@ function initSVG(){
 
 function initVideo(){
 	// 添加video-container的div并设置布局
-	d3.select("body")
+	video_container = d3.select("body")
 		.append("div")
+		.attr("display", "inline-block")
+		.attr("width", viewport.w)
+		.attr("height", viewport.h)
 		.attr("id","video-container")
+		.style("position", "fixed")
 		.style("top", layout.video.y + "px" )
 		.style("left", layout.video.x + "px" )	
 	
@@ -413,15 +422,19 @@ function initKeyBoardEvent(){
             console.log("Ctrl + Z: to be finished");
 
         }
-        // 按 Ctrl + + 放大
-        else if(e && event.ctrlKey && e.keyCode==99){
+        // 按 [ 放大
+        else if(e && e.keyCode == 219){
             console.log("Ctrl + +: to be finished");
 
         }
-        // 按 Ctrl + - 缩小
-        else if(e && event.ctrlKey && e.keyCode==101){
+        // 按 ] 缩小
+        else if(e && e.keyCode == 221){
             console.log("Ctrl + -: to be finished");
-
+            // zoomIn();
+        }
+        else{
+        	console.log("e:", e);
+        	// zoomOut();
         }
 	};
 }
