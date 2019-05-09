@@ -206,11 +206,11 @@ function init(argument) {
 		h: 800,
 		ratio: 5/24,
 		fps: 25,
-		src: "/resources/PosFlow/first_half.mp4",
+		src: "../resources/PosFlow/first_half.mp4",
 	};
 	source_data = {
 		fps: 25,
-		src: "/resources/PosFlow/Germany_tracklets.json",
+		src: "../resources/PosFlow/Germany_tracklets.json",
 	}
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
@@ -292,7 +292,7 @@ function initSVG(){
 		.attr("id", "image_bg")
 		.attr("width", "100%")
 		.attr("width", "100%")
-		.attr("xlink:href", "/resources/PosFlow/img/image_bg.png")
+		.attr("xlink:href", "../resources/PosFlow/img/image_bg.png")
 }
 
 function initVideo(){
