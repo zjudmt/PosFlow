@@ -7,10 +7,8 @@ function initWorkspace(){
 	
 	var img_list=["/resources/PosFlow/img/chain.png",
 	"/resources/PosFlow/img/chain-broken.png",
-	"/resources/PosFlow/img/chain-broken.png",
 	"/resources/PosFlow/img/trash.png",
-	"/resources/PosFlow/img/chain-broken.png",
-	
+	"/resources/PosFlow/img/video-camera.png",
 	"/resources/PosFlow/img/upload.png",
 	"/resources/PosFlow/img/download.png"]
 
