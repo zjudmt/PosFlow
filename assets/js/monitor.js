@@ -10,6 +10,7 @@ function initMonitor() {
 				+ " , " + d.y + " )";
 				return str
 			})
+			
 
 	// 用flag_canplaythrough来判断是否已经初始化过monitor了
 	flag_canplaythrough = false;
@@ -34,6 +35,8 @@ function doInitMonitor() {
 		source_video.seconds = Math.round(video_obj.duration);
 		initMain();
 		initControls();
+
+		initMouseScroll();
 		flag_canplaythrough = true;
 	}
 }
@@ -60,17 +63,66 @@ function initMain() {
 	vid2h = d3.scaleLinear()
 		.domain([0, source_video.h])
 		.range([0, layout_main.h])
+	
+	zoom_main = d3.zoom()
+			.scaleExtent([1, 8])
+			// .translateExtent([0,0],[0,0])
+			// .extent([[0,0],[100,100]])
+			.on("zoom", zoomed_main)
+	drag_main = d3.drag()
+			.on("drag", null)
+
+	main_clip = monitor.append("clipPath")
+		.attr("id", "main-clip")
+		.append("rect")
+		.attr("height", layout_main.h)
+		.attr("width", layout_main.w)
+		// .call(zoom_main)
+
+	panel = monitor.append("rect")
+		.attr("id", "panel")
+		.attr("height", layout_main.h)
+		.attr("width", layout_main.w)
+		.style("fill", "none")
+		.style("pointer-events", "all")
+		// .call(drag_main)
+		.call(zoom_main)
 
 	main = monitor.append("g")
+		.attr("clip-path", "url(#main-clip)")
+		.append("g")
 		.attr("id", "players")
+		// .call(drag)
+		.call(zoom_main)
 
 	path = main.append("g")
 		.attr("id", "paths")
 
 	rect = main.append("g")
 		.attr("id", "rects")
+		
 }
 
+function zoomed_main() {
+	
+	var t = d3.event.transform;
+	t = zoomS(t);
+	main.attr("transform", t);
+	var dom = document.getElementById('video-container');
+
+	var vid_w = layout.new_video.w;
+	var vid_h = layout.new_video.h;
+	var dy = t.y;
+	var dx = t.x;
+	var k = t.k;
+	var new_left = dx * viewport.scale + 0.5 * (k-1) * vid_w ;
+	var new_top = dy * viewport.scale + 0.5 * (k-1) * vid_h ;
+	var new_scale = t.k;
+	dom.style.transform = "translate("+new_left+"px,"
+		+new_top+"px)scale("+new_scale+")";
+	d3.zoom().transform(panel, t);
+	d3.zoom().transform(main, t);
+}
 
 function updateMain(){
 	// 通过id选择器选中初始化时创建的 "g"
@@ -82,6 +134,9 @@ function updateMain(){
 
 	rects = main.select("#rects")
 		.selectAll("rect").data(current_tracklets)
+
+
+
 	// 如果有多的元素就remove掉
 	paths.exit().remove();
 	rects.exit().remove();
@@ -89,6 +144,7 @@ function updateMain(){
 	// 如果需要新的元素就添加
 	new_paths =  paths.enter().append("path")
 	new_rects =  rects.enter().append("rect")
+
 
 
 	// 在绑定矩形之前先绑定路径,避免矩形被路径遮挡
@@ -131,13 +187,17 @@ function updateMain(){
 			else
 				return "";
 		})
-		.on("click", selectTracklet)
+		.on("click", selectTracklet )
 		.on("mouseover", function(d){
 			setStatus(d.id, "hover")
 		})
 		.on("mouseout", function(d){
 			setStatus(d.id, "default")
+
+		
 	})
+
+	
 
 	// 路径生成器
 	function trackGenerator(d){
@@ -191,6 +251,11 @@ function updateMain(){
 		var str = "translate("+ base_x + "," + base_y + ")";
 		return str;
 	}
+	if(rect_hide>0){
+		paths.remove();
+		rects.remove();
+		
+	}
 }
 // 各种取位移或者尺寸函数,都需要进行坐标保护
 function getPlayerTransform(d) {
@@ -219,6 +284,7 @@ function getPlayerRectHeight(d) {
 
 function updateMonitor() {
 	updateMain();
+	updateMark();
 }
 
 // 通过时间获取
@@ -259,6 +325,10 @@ function initControls(){
 			x: 42, y: 0.75,
 			w: 6, h: 0.8,
 		},
+		mark_line:{
+			y1:0.1,
+			y2:0.4,
+		}
 	}
 	controls_data = {
 		layout: layout.monitor.controls,
@@ -295,7 +365,8 @@ function initControls(){
 			endpoint:{
 				x: unit * (lo.progress_bar.x + lo.progress_bar.w),
 			}
-		}
+		},
+		
 	}
 
 	time2x = d3.scaleLinear()
@@ -370,6 +441,10 @@ function initControls(){
 			.attr("y1",function(d){return d.y})
 			.attr("y2",function(d){return d.y})
 
+	var mark_line_group=progress_bar
+		.append("g")
+		.attr("id","markgroup");
+
 	var timebox = controls
 		.append("text")
 		.datum(controls_data.timebox)
@@ -435,4 +510,34 @@ function initControls(){
 		}
 	}
 }
+
+
+function updateMark(){
+
+	var mark_line_group=monitor.select("#markgroup");
+	var mark_line=mark_line_group
+		.selectAll("line")
+		.data(tracklets.marklines)
+
+	mark_line.exit().remove();
+	mark_line.enter().append("line");
+
+	mark_line.attr("class","mark_line")
+		.attr("x1",function(d){return d.x})
+		.attr("y1",function(d){return d.y1})
+		.attr("x2",function(d){return d.x})
+		.attr("y2",function(d){return d.y2})
+		.on("dblclick",function(d,i){
+			tracklets.marklines.splice(i,1);
+			console.log(tracklets.marklines)
+			})
+}
+
+function initMouseScroll() {
+	document.body.onmousewheel = function(event){
+	    var t = event || window.event;
+	    // console.log(t);
+	}
+}
+
 
