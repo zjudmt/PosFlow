@@ -41,7 +41,7 @@ function selectTracklet(d){
 		}
 		console.log("deselectTracklet: ", selected)
 	}
-	else{
+	else {
 		if(cur_status == "conflicted")
 			return;
 		tracklets[index].status = "selected";
@@ -225,6 +225,14 @@ function cutline(){
 
 	// console.log(tracklet1)
 	// console.log(tracklet2)
+}
+
+function exchange(){
+	console.log(d3.selectAll(".enable").size())
+	if(d3.select("#wsbuttong-3").selectAll(".enable").size()==0)//改成0
+		return 0;
+	console.log("exchange")
+
 }
 
 function setNewId(){

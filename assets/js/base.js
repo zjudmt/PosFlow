@@ -100,6 +100,7 @@ function initLayout(argument) {
 			h: row[3].h ,
 		},
 	}
+	rect_hide=-1;
 }
 
 function initData(data){
@@ -210,6 +211,9 @@ function init(argument) {
 	frame = 0;
 	map = [];
 	selected = [];
+	last_dbclicked = -1;
+	linked_pairs = [];
+
 	initVideo();
 	initSVG();
 	initKeyBoardEvent();
@@ -422,6 +426,15 @@ function initKeyBoardEvent(){
         else if(e && event.ctrlKey && e.keyCode==101){
             console.log("Ctrl + -: to be finished");
 
+        }
+        else if(e && e.keyCode==65){
+        	console.log("Ctrl + -: to be finished");
+            rect_hide=-rect_hide;
+
+        }
+        else if(e && event.ctrlKey && e.keyCode==76) {
+        	console.log("Ctrl + L: link clicked")
+			last_dbclicked = -1;
         }
 	};
 }
