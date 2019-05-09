@@ -11,15 +11,15 @@ A tool for merging tracklets of players in videos using d3
 
 即 形成文件结构形如(以Apache服务器的htdocs为根目录为例)
 
+![1557411250765](README.assets/1557411250765.png)
 
-
-![1557405971826](assets/1557405971826.png)
+![1557405971826](README.assets/1557405971826.png)
 
 
 
 ## 界面说明
 
-![1557406975450](assets/1557406975450.png)
+![1557406975450](README.assets/1557406975450.png)
 
 ### 布局简介
 
