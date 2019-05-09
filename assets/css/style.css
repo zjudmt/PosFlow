@@ -13,8 +13,9 @@ text{
 }
 
 body{
-	background: url(/resources/PosFlow/img/bg.png) no-repeat;
-	background-size: 100%;
+	background-color: #191b21;
+	/*background: url(/resources/PosFlow/img/bg.png) no-repeat;*/
+	/*background-size: 100%;*/
 }
 div{
 	position: absolute;
@@ -31,10 +32,6 @@ video::-webkit-media-controls {
 
 line{
 	stroke-linecap: butt;
-}
-
-body{
-	background-color: #191b21;
 }
 
 path{
@@ -97,6 +94,15 @@ path.conflicted{
 
 .button{
     cursor: pointer;
+}
+
+.mark_line{
+	stroke: #e20749e1 ;
+    stroke-width: 0.4em;
+    /*fill-opacity:0;*/
+    stroke-linejoin:round;
+	stroke-linecap:round;
+	cursor: pointer;
 }
 
 #ws_content line{
