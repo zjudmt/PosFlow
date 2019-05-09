@@ -13,8 +13,9 @@ text{
 }
 
 body{
-	background: url(/resources/PosFlow/img/bg.png) no-repeat;
-	background-size: 100%;
+	background-color: #191b21;
+	/*background: url(/resources/PosFlow/img/bg.png) no-repeat;*/
+	/*background-size: 100%;*/
 }
 div{
 	position: absolute;
@@ -31,10 +32,6 @@ video::-webkit-media-controls {
 
 line{
 	stroke-linecap: butt;
-}
-
-body{
-	background-color: #191b21;
 }
 
 path{
