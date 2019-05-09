@@ -280,7 +280,11 @@ function initSVG(){
 				return str;
 			})
 
-
+	image_bg = svg.append("image")
+		.attr("id", "image_bg")
+		.attr("width", "100%")
+		.attr("width", "100%")
+		.attr("xlink:href", "/resources/PosFlow/img/image_bg.png")
 }
 
 function initVideo(){
@@ -330,7 +334,7 @@ function updateLayout() {
 			h: window.innerWidth * source_video.ratio,
 		}
 	d3.select("#video-container")
-		// .style("top", layout.new_video.y + "px" )
+		.style("top", layout.new_video.y + "px" )
 }
 
 function initKeyBoardEvent(){

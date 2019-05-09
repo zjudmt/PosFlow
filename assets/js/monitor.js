@@ -62,6 +62,14 @@ function initMain() {
 	vid2h = d3.scaleLinear()
 		.domain([0, source_video.h])
 		.range([0, layout_main.h])
+	
+	zoom = d3.zoom()
+			.scaleExtent([1, 8])
+			// .translateExtent([0,0],[0,0])
+			// .extent([[0,0],[100,100]])
+			.on("zoom", zoomed)
+	drag = d3.drag()
+			.on("drag", null)
 
 	panel = monitor.append("rect")
 		.attr("id", "panel")
@@ -69,20 +77,13 @@ function initMain() {
 		.attr("width", layout.monitor.main.w)
 		.style("fill", "none")
 		.style("pointer-events", "all")
-		.call(d3.drag()
-			.on("drag", null)
-			)
-		.call(d3.zoom()
-			.scaleExtent([1, 8])
-			// .translateExtent([0,0],[0,0])
-			// .extent([[0,0],[100,100]])
-			.filter(zoomFilter)
-			.on("zoom", zoomed)
-			)
+		.call(drag)
+		.call(zoom)
 
 	main = monitor.append("g")
 		.attr("id", "players")
-		
+		// .call(drag)
+		.call(zoom)
 
 	path = main.append("g")
 		.attr("id", "paths")
@@ -92,17 +93,10 @@ function initMain() {
 		
 }
 
-function zoomFilter() {
-	return !d3.event.button;
-}
-
 function zoomed() {
 	
 	var t = d3.event.transform;
-	console.log("t:", t);
 	t = zoomS(t); 
-	// console.log("t_new:", t);
-	main.attr("transform", t);
 	var dom = document.getElementById('video-container');
 
 	var vid_w = layout.new_video.w;
@@ -115,6 +109,8 @@ function zoomed() {
 	var new_scale = t.k;
 	dom.style.transform = "translate("+new_left+"px,"
 		+new_top+"px)scale("+new_scale+")";
+	d3.zoom().transform(panel, t);
+	d3.zoom().transform(main, t);
 }
 
 function updateMain(){
