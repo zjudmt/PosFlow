@@ -133,6 +133,9 @@ function updateMain(){
 
 	rects = main.select("#rects")
 		.selectAll("rect").data(current_tracklets)
+
+
+
 	// 如果有多的元素就remove掉
 	paths.exit().remove();
 	rects.exit().remove();
@@ -140,6 +143,7 @@ function updateMain(){
 	// 如果需要新的元素就添加
 	new_paths =  paths.enter().append("path")
 	new_rects =  rects.enter().append("rect")
+
 
 
 	// 在绑定矩形之前先绑定路径,避免矩形被路径遮挡
@@ -241,6 +245,11 @@ function updateMain(){
 		var base_y = vid2y(pos[1]) + current_point.y;
 		var str = "translate("+ base_x + "," + base_y + ")";
 		return str;
+	}
+	if(rect_hide>0){
+		paths.remove();
+		rects.remove();
+		
 	}
 }
 // 各种取位移或者尺寸函数,都需要进行坐标保护
