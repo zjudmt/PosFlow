@@ -199,7 +199,7 @@ function init(argument) {
 	source_video = {
 		w: 3840,
 		h: 800,
-		ratio: 24/5,
+		ratio: 5/24,
 		fps: 25,
 		src: "/resources/PosFlow/first_half.mp4",
 	};
@@ -287,7 +287,6 @@ function initVideo(){
 	// 添加video-container的div并设置布局
 	video_container = d3.select("body")
 		.append("div")
-		.attr("display", "inline-block")
 		.attr("width", viewport.w)
 		.attr("height", viewport.h)
 		.attr("id","video-container")
@@ -328,10 +327,10 @@ function updateLayout() {
 			x: 0,
 			y: (row[0].h + row[1].h) * viewport.scale ,
 			w: window.innerWidth,
-			h: viewport.h * viewport.scale,
+			h: window.innerWidth * source_video.ratio,
 		}
 	d3.select("#video-container")
-		.style("top", layout.new_video.y + "px" )
+		// .style("top", layout.new_video.y + "px" )
 }
 
 function initKeyBoardEvent(){

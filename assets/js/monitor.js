@@ -64,8 +64,9 @@ function initMain() {
 		.range([0, layout_main.h])
 
 	panel = monitor.append("rect")
-		.attr("height", source_video.h)
-		.attr("width", source_video.w)
+		.attr("id", "panel")
+		.attr("height", layout.monitor.main.h)
+		.attr("width", layout.monitor.main.w)
 		.style("fill", "none")
 		.style("pointer-events", "all")
 		.call(d3.drag()
@@ -96,28 +97,24 @@ function zoomFilter() {
 }
 
 function zoomed() {
-	main.attr("transform", d3.event.transform);
-	console.log("zoom", d3.event.transform);
-	// var video_container = d3.select("#video-container");
+	
+	var t = d3.event.transform;
+	console.log("t:", t);
+	t = zoomS(t); 
+	// console.log("t_new:", t);
+	main.attr("transform", t);
 	var dom = document.getElementById('video-container');
-	console.log("scale:", viewport.scale);
-	var top = layout.video.y;
-	var left = layout.video.x;
-	var new_top = d3.event.transform.y * viewport.scale;
-	var new_left = d3.event.transform.x * viewport.scale;
-	video_container
-		.attr("width", viewport.w * d3.event.transform.k)
-		.attr("height", viewport.h * d3.event.transform.k)
-		// .style("top", new_top + "px")
-		// .style("left", new_left + "px")
-	// console.log("new_top", new_top);
-	// console.log("new_left", new_left);
-	// new_top = video_container.style("top");
-	// new_left = video_container.style("left");
-	dom.style.transform = "translate("+new_left+"px,"+new_top+"px)";
-	// console.log("transform", dom.style.transform);
-	// console.log("new_top", new_top);
-	// console.log("new_left", new_left);
+
+	var vid_w = layout.new_video.w;
+	var vid_h = layout.new_video.h;
+	var dy = t.y;
+	var dx = t.x;
+	var k = t.k;
+	var new_left = dx * viewport.scale + 0.5 * (k-1) * vid_w ;
+	var new_top = dy * viewport.scale + 0.5 * (k-1) * vid_h ;
+	var new_scale = t.k;
+	dom.style.transform = "translate("+new_left+"px,"
+		+new_top+"px)scale("+new_scale+")";
 }
 
 function updateMain(){
@@ -486,8 +483,8 @@ function initControls(){
 
 function initMouseScroll() {
 	document.body.onmousewheel = function(event){
-	    var e = event || window.event;
-	    // console.log(e);
+	    var t = event || window.event;
+	    // console.log(t);
 	}
 }
 
