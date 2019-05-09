@@ -7,6 +7,8 @@ function initWorkspace(){
 	
 	var img_list=["/resources/PosFlow/img/chain.png",
 	"/resources/PosFlow/img/chain-broken.png",
+	"/resources/PosFlow/img/trash.png",
+	"/resources/PosFlow/img/video-camera.png",
 	"/resources/PosFlow/img/upload.png",
 	"/resources/PosFlow/img/download.png"]
 
@@ -58,18 +60,25 @@ function initWorkspace(){
 	// var button_merge= buttonarea.select("#wsbutton-1")
 	buttonarea.select("#wsbutton-1").append("title").text("merge")
 	buttonarea.select("#wsbutton-2").append("title").text("cut")
-	buttonarea.select("#wsbutton-3").append("title").text("load")
-	buttonarea.select("#wsbutton-4").append("title").text("save")
 
-	buttonarea.select("#wsbutton-3").classed("enable",true)
-	buttonarea.select("#wsbutton-4").classed("enable",true)
+	buttonarea.select("#wsbutton-3").append("title").text("delete")
+	buttonarea.select("#wsbutton-4").append("title").text("selectvideo")
+
+	buttonarea.select("#wsbutton-5").append("title").text("load")
+	buttonarea.select("#wsbutton-6").append("title").text("save")
+
+	buttonarea.select("#wsbutton-5").classed("enable",true)
+	buttonarea.select("#wsbutton-6").classed("enable",true)
 	
 	buttonarea.select("#wsbutton-1").on("click",merge)
 	buttonarea.select("#wsbutton-2").on("click",cutline)
-	buttonarea.select("#wsbutton-3")
+	buttonarea.select("#wsbutton-3").on("click",trash)
+	buttonarea.select("#wsbutton-4").on("click",selectvideo)
+
+	buttonarea.select("#wsbutton-5")
 		.attr("type","file")
 		.on("click",load)
-	buttonarea.select("#wsbutton-4").on("click",save)
+	buttonarea.select("#wsbutton-6").on("click",save)
 
 
 
@@ -184,6 +193,7 @@ function updateWorkspace(){
 	var height_workspace=layout.workspace.h//ws高度
 	var img_list=["/resources/PosFlow/img/chain.png",
 	"/resources/PosFlow/img/chain-broken.png",
+	"/resources/PosFlow/img/trash.png",
 	"/resources/PosFlow/img/upload.png",
 	"/resources/PosFlow/img/download.png"]
 	var width_buttonarea=height_workspace/img_list.length
@@ -216,23 +226,28 @@ function updateWorkspace(){
 
 	merge_button=d3.select("#wsbutton-1")
 	cut_button=d3.select("#wsbutton-2")
+	trash_button=d3.select("#wsbutton-3")
+
+	cut_button.classed("enable",false);
+	trash_button.classed("enable",false);
 
 	if(selected.length==2)
 		merge_button.classed("enable",true)
-	else
+	else{
 		merge_button.classed("enable",false)
-
-	
-	cut_button.classed("enable",false);
-	if(selected.length==1){
-		var tracklet_temp=selected[0]
-		for(var i=0;i<tracklet_temp.interpolation.length;i++){
-			if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
-				cut_button.classed("enable",true)
-			}
+		if(selected.length==1){
+			trash_button.classed("enable", true)	
+			var tracklet_temp=selected[0]
+			if (frame > tracklet_temp.start_frame && frame < tracklet_temp.end_frame)
+				cut_button.classed("enable",true);
+			// for(var i=0;i<tracklet_temp.interpolation.length;i++){
+			// 	if(frame>=tracklet_temp.interpolation[i][0]&&frame<=tracklet_temp.interpolation[i][1]){
+			// 		cut_button.classed("enable",true);
+			// 		break;
+			// 	}
+			// }
 		}
 	}
-
 
 
 	var sgroups=area_selected.selectAll("line")
@@ -314,13 +329,15 @@ function updateWorkspace(){
 	}
 
 	function t_dashGenerator(d){
+		if(!d["interpolation"][0])
+			return "";
 		// 找能显示长方形的端点时间[t1, t2]
 		var t1 = d["start_frame"];
 		var t2 = d["end_frame"];
 		// var t2 = d3.min([d["end_frame"], frame+future_duration]);
 		// 找到虚线可能的起始点， 找不到为数组长度
 		var dash_index = d["interpolation"].length;
-		for(var i = 0, len = d["interpolation"].length; i < len; ++i){
+		for(var i = 0; i < d["interpolation"].length; ++i){
 			if(t1 < d["interpolation"][i][1]){
 				dash_index = i;
 				break;
@@ -340,7 +357,7 @@ function updateWorkspace(){
 				count++;
 			}
 			// 找到虚线终点，处理虚线
-			else if(t == d["interpolation"][dash_index][1]){
+			if(t == d["interpolation"][dash_index][1]){
 				var dash_end_t = d["interpolation"][dash_index][0];
 				if(count == 0){
 					dash_end_t = t1;
@@ -374,6 +391,8 @@ function updateWorkspace(){
 	}
 
 	function s_dashGenerator(d){
+		if(!d["interpolation"][0])
+			return "";
 		// 找能显示长方形的端点时间[t1, t2]
 		var t1 = d["start_frame"];
 		if(d["end_frame"] < frame-past_duration+25){
@@ -386,7 +405,7 @@ function updateWorkspace(){
 			t1 = frame-past_duration;
 		}
 		var t2 = d["end_frame"];
-		console.log(t1,t2)
+		// console.log(t1,t2)
 
 		// 找到虚线可能的起始点， 找不到为数组长度
 		var dash_index = d["interpolation"].length;
@@ -410,7 +429,7 @@ function updateWorkspace(){
 				count++;
 			}
 			// 找到虚线终点，处理虚线
-			else if(t == d["interpolation"][dash_index][1]){
+			if(t == d["interpolation"][dash_index][1]){
 				var dash_end_t = d["interpolation"][dash_index][0];
 				if(count == 0){
 					dash_end_t = t1;
@@ -442,28 +461,6 @@ function updateWorkspace(){
 		// }
 		return dash_str;
 	}
-
-
-	// sgroups.append("line")
-	// 	.attr("x1",function(d){return width_graph*Math.max((d.start_frame-(frame-past_duration))/(past_duration+future_duration),0)})
-	// 	.attr("x2",function(d){return width_graph*Math.min((d.end_frame-(frame-past_duration))/(past_duration+future_duration),1)})
-	// 	.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
-	// 	.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line})
-	// 	.attr("stroke",function(d){return d.color})
-	// 	.attr("stroke-width",thickness_line)
-
-	// tgroups.append("line")
-	// 	.attr("x1",function(d){return width_graph*(d.start_frame-(frame-past_duration))/(past_duration+future_duration)})
-	// 	.attr("x2",function(d){return width_graph*(d.end_frame-(frame-past_duration))/(past_duration+future_duration)})
-	// 	.attr("y1",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
-	// 	.attr("y2",function(d,i){return i*(thickness_line+distance_line)+thickness_line+y_drag})
-	// 	.attr("clip-path","url(#ws-clipPath)")
-	// 	.attr("stroke",function(d){return d.color})
-	// 	.attr("stroke-width",thickness_line)
-	// 	.call(zoom)
-		
-	
-		
 		
 	
 }

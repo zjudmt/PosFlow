@@ -1,7 +1,6 @@
 function getColorByID(ID){
 	let res = (ID/Math.PI) - Math.floor(ID/Math.PI)
 	let color = colorScale(res).toString();
-	console.log(color);
 	return color;
 }
 
@@ -42,7 +41,7 @@ function selectTracklet(d){
 		}
 		console.log("deselectTracklet: ", selected)
 	}
-	else{
+	else {
 		if(cur_status == "conflicted")
 			return;
 		tracklets[index].status = "selected";
@@ -73,7 +72,7 @@ function getTrackletsByFrame(data, frame){
 		for (var j = selected.length - 1; j >= 0; j--) {
 			var max_start = d3.max( [selected[j].start_frame, start_frame] )
 			var min_end = d3.min( [selected[j].end_frame, end_frame] ) 
-			if( max_start < min_end && data[i].status != "selected" ) {
+			if( max_start <= min_end && data[i].status != "selected" ) {
 				flag_conflicted = true;
 				// console.log("max_start", max_start, "min_end", min_end)
 			}
@@ -102,6 +101,15 @@ function getCurrentFrame(){
 	return Math.floor(d3.select("#video").property("currentTime")*source_video.fps);
 }
 
+function trash(){
+	if(!d3.select("#wsbuttong-3").selectAll(".enable").size())
+		return 0;
+	var garbage = selected[0];
+	var index_g = getIndexbyID(garbage.id);
+	tracklets.splice(index_g, 1);
+	selected.splice(0, 1);
+}
+
 function merge(){
 
 	console.log(d3.select("#wsbuttong-1").selectAll(".enable").size())
@@ -113,26 +121,25 @@ function merge(){
 	var tracklet1=selected[0],
 		tracklet2=selected[1];
 
-	tracklet1.status="selected"
-	tracklet2.status="selected"
-	console.log(tracklet1)
-	console.log(tracklet2)
-	//两个box作为关键帧
-	var box1=tracklet1.boxes[tracklet1.boxes.length-1],
-		box2=tracklet2.boxes[0],
-		num_newboxes=tracklet2.start_frame-tracklet1.end_frame-1;
 
-	//生成中间box
-	for(var i=0;i<num_newboxes;i++){
-		var w=(i+1)/(num_newboxes+1)//权重
-		var tempbox=[]
-		for(var j=0;j<4;j++){
-			tempbox.push(Math.round((1-w)*box1[j]+w*box2[j]))
+	if(tracklet1.end_frame<tracklet2.start_frame-1){//是否无缝贴合
+		//两个box作为关键帧
+		var box1=tracklet1.boxes[tracklet1.boxes.length-1],
+			box2=tracklet2.boxes[0],
+			num_newboxes=tracklet2.start_frame-tracklet1.end_frame-1;
+
+		//生成中间box
+		for(var i=0;i<num_newboxes;i++){
+			var w=(i+1)/(num_newboxes+1)//权重
+			var tempbox=[]
+			for(var j=0;j<4;j++){
+				tempbox.push(Math.round((1-w)*box1[j]+w*box2[j]))
+			}
+			tracklet1.boxes.push(tempbox);
 		}
-		// tempbox.push(0)//插值后面多加个0
-		tracklet1.boxes.push(tempbox);
+		tracklet1.interpolation.push([tracklet1.end_frame+1,tracklet2.start_frame-1])//插值数组添加
+
 	}
-	tracklet1.interpolation.push([tracklet1.end_frame+1,tracklet2.start_frame-1])//插值数组添加
 
 	//复制后一个tracklet
 	for(var i=0;i<tracklet2.boxes.length;i++){
@@ -144,21 +151,16 @@ function merge(){
 		tracklet1.interpolation.push(tracklet2.interpolation[i])
 	tracklet1.interpolation.sort(function(a,b){return a[0]-b[0]})
 
-	
 	//存入第一个tracklet
-	for (var i = tracklets.length - 1; i >= 0; i--) {
-			if(tracklets[i].id == tracklet1.id)
-				tracklets.splice(i,1,tracklet1);
-		}
-
+	var index_t1 = getIndexbyID(tracklet1.id);
+	tracklets.splice(index_t1,1,tracklet1);
+	
 	//删除后一个tracklets
-	for (var i = tracklets.length - 1; i >= 0; i--) {
-			if(tracklets[i].id == tracklet2.id)
-				tracklets.splice(i,1);
-		}
-	selected.splice(1,1)
+	var index_t2 = getIndexbyID(tracklet2.id);
+	tracklets.splice(index_t2,1);
 
-	console.log(tracklet1)
+	selected.splice(1,1);
+
 }
 
 function cutline(){
@@ -170,17 +172,24 @@ function cutline(){
 
 	var tracklet1=selected[0]
 	//获取interpolation中位置
-	var index_inter
-	for(var i=0;i<tracklet1.interpolation.length;i++){
 
+	var index_inter = -1, old_end, new_start
+	var new_end = tracklet1.end_frame;
+	for(var i=0;i<tracklet1.interpolation.length;i++){
 		if(frame>=tracklet1.interpolation[i][0]&&frame<=tracklet1.interpolation[i][1]){
-			index_inter=i
-			console.log(index_inter)
+			index_inter=i;
+			break;
 		}
 	}
-	if(i==tracklet1.interpolation.length)
-		console.log("not in range")
-	
+
+	if(index_inter == -1){
+		old_end = frame;
+		new_start = frame + 1;
+		console.log("solid cut")
+	}else{
+		new_start = tracklet1.interpolation[index_inter][1] + 1;
+		old_end = tracklet1.interpolation[index_inter][0] - 1;
+	}
 
 	// console.log(tracklet1)
 	// console.log(index_inter)
@@ -189,8 +198,8 @@ function cutline(){
 	tracklet2.id=setNewId()
 	tracklet2.color=getColorByID(tracklet2.id)
 	//调整end_frame和start_frame
-	tracklet2.start_frame=tracklet1.interpolation[index_inter][1]+1
-	tracklet2.end_frame=tracklet1.end_frame
+	tracklet2.start_frame = new_start;
+	tracklet2.end_frame = new_end;
 	//分离interpolation
 	tracklet2.interpolation=[]
 	for(var i=0;i<tracklet1.interpolation.length;i++){
@@ -206,7 +215,7 @@ function cutline(){
 
 	//剪切旧tracklet
 	//调整end_frame
-	tracklet1.end_frame=tracklet1.interpolation[index_inter][0]-1
+	tracklet1.end_frame = old_end;
 	//分离interpolation
 	for(var i=0;i<tracklet1.interpolation.length;i++){
 		if(tracklet1.interpolation[i][0]>=tracklet1.end_frame)
@@ -222,6 +231,16 @@ function cutline(){
 	// console.log(tracklet1)
 	// console.log(tracklet2)
 }
+
+
+function exchange(){
+	console.log(d3.selectAll(".enable").size())
+	if(d3.select("#wsbuttong-3").selectAll(".enable").size()==0)//改成0
+		return 0;
+	console.log("exchange")
+
+}
+
 
 function setNewId(){
 	//设置新ID
@@ -263,19 +282,23 @@ function selectLineX2(d){
 }
 
 function load(){
-	document.getElementById("uploadFile").click(); 
+	document.getElementById("uploadTracklets").click(); 
 }
 
-function readLocalFile () {
+function selectvideo(){
+	document.getElementById("uploadVideo").click(); 
+}
+
+function readTracklets () {
         
-        var localFile = document.getElementById("uploadFile").files[0];
+        var localFile = document.getElementById("uploadTracklets").files[0];
 
         var reader = new FileReader();
        
         reader.readAsText(localFile)
         reader.onload=function(f){  
         var result=document.getElementById("fileContent");  
-    
+		
         var newdata=JSON.parse(this.result)
         
         tracklets = initData(newdata);
@@ -283,9 +306,66 @@ function readLocalFile () {
         
 }
 
+function readVideo(){
+	
+	var localVideo = document.getElementById("uploadVideo").files[0]
+	console.log(localVideo)
+
+	if(!/video\/\w+/.test(localVideo.type)){  
+        alert("需要选择视频！");  
+        return false;  
+    }  
+	var new_video_src = URL.createObjectURL(localVideo)
+	console.log(new_video_src)
+
+
+	video.attr("src",new_video_src)
+	// frame=0
+	svg.select("#monitor").remove()
+	initMonitor()
+	// controls_data.timebox.total_time= getTimeText( source_video.duration )
+
+	URL.revokeObjectURL(localVideo)
+
+}
+
 function save(){
 	var blob = new Blob([JSON.stringify(tracklets)], { type: "" });
 	saveAs(blob, "tracklets.json");
 
+}
+
+function indexS(index, d) {
+	index = d3.min([index, d["boxes"].length-1]);
+	index = d3.max([0, index])
+	return index;
+}
+
+
+function markCurrentTime(){
+	console.log("mark")
+	var t=frame/25
+	var xtemp=time2x(t);
+	var new_mark={
+		x:xtemp,
+		y1:unit * lo.mark_line.y1,
+		y2:unit * lo.mark_line.y2,
+	}
+	tracklets.marklines.push(new_mark);
+	console.log(tracklets.marklines)
+}
+
+function zoomS(t) {
+	// var vid_w = viewBox.w;
+	// var vid_h = viewBox.w / source_video.ratio;
+	var vid_w = viewBox.w;
+	var vid_h = viewBox.w * source_video.ratio;
+	var x_s = d3.max([t.x, (1-t.k)*vid_w ]);
+	x_s = d3.min([0, x_s]);
+	var y_s = d3.max([t.y, (1-t.k)*vid_h ]);
+	y_s = d3.min([0, y_s]);
+	t.x = x_s;
+	t.y = y_s;
+	return t;
 }
 
