@@ -103,6 +103,7 @@ function initLayout(argument) {
 
 	rect_hide=-1;
 
+
 	zoom = {
 		scale: 1,
 		x: 0,
@@ -220,9 +221,6 @@ function init(argument) {
 	frame = 0;
 	map = [];
 	selected = [];
-	last_dbclicked = -1;
-	linked_pairs = [];
-
 	initVideo();
 	initSVG();
 	initKeyBoardEvent();
@@ -308,6 +306,8 @@ function initVideo(){
 	
 	// 添加视频
 	
+	
+
 	video = d3.select("#video-container")
 		.append("video")
 			.attr("width", "100%" )
@@ -443,10 +443,9 @@ function initKeyBoardEvent(){
         // 按 ] 缩小
         else if(e && e.keyCode == 221){
             console.log("Ctrl + -: to be finished");
-
+            // zoomIn();
 
         }
-
         // 按 Ctrl + M 标注
         else if(e && event.ctrlKey && e.keyCode==77){
           markCurrentTime();
@@ -454,15 +453,12 @@ function initKeyBoardEvent(){
       
         else if(e && e.keyCode==72){
             rect_hide=-rect_hide;
-        }
 
-        else if(e && e.keyCode==65){
-        	console.log("Ctrl + -: to be finished");
-            rect_hide=-rect_hide;
         }
-        else if(e && event.ctrlKey && e.keyCode==76) {
-        	console.log("Ctrl + L: link clicked")
-			    last_dbclicked = -1;
+        else{
+        	console.log("e:", e);
+        	// zoomOut();
+
         }
 	};
 }
