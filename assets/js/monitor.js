@@ -35,6 +35,7 @@ function doInitMonitor() {
 		source_video.seconds = Math.round(video_obj.duration);
 		initMain();
 		initControls();
+
 		initMouseScroll();
 		flag_canplaythrough = true;
 	}
@@ -123,6 +124,9 @@ function updateMain(){
 
 	rects = main.select("#rects")
 		.selectAll("rect").data(current_tracklets)
+
+
+
 	// 如果有多的元素就remove掉
 	paths.exit().remove();
 	rects.exit().remove();
@@ -130,6 +134,7 @@ function updateMain(){
 	// 如果需要新的元素就添加
 	new_paths =  paths.enter().append("path")
 	new_rects =  rects.enter().append("rect")
+
 
 
 	// 在绑定矩形之前先绑定路径,避免矩形被路径遮挡
@@ -178,7 +183,11 @@ function updateMain(){
 		})
 		.on("mouseout", function(d){
 			setStatus(d.id, "default")
+
+		
 	})
+
+	
 
 	// 路径生成器
 	function trackGenerator(d){
@@ -232,6 +241,11 @@ function updateMain(){
 		var str = "translate("+ base_x + "," + base_y + ")";
 		return str;
 	}
+	if(rect_hide>0){
+		paths.remove();
+		rects.remove();
+		
+	}
 }
 // 各种取位移或者尺寸函数,都需要进行坐标保护
 function getPlayerTransform(d) {
@@ -260,6 +274,7 @@ function getPlayerRectHeight(d) {
 
 function updateMonitor() {
 	updateMain();
+	updateMark();
 }
 
 // 通过时间获取
@@ -300,6 +315,10 @@ function initControls(){
 			x: 42, y: 0.75,
 			w: 6, h: 0.8,
 		},
+		mark_line:{
+			y1:0.1,
+			y2:0.4,
+		}
 	}
 	controls_data = {
 		layout: layout.monitor.controls,
@@ -336,7 +355,8 @@ function initControls(){
 			endpoint:{
 				x: unit * (lo.progress_bar.x + lo.progress_bar.w),
 			}
-		}
+		},
+		
 	}
 
 	time2x = d3.scaleLinear()
@@ -411,6 +431,10 @@ function initControls(){
 			.attr("y1",function(d){return d.y})
 			.attr("y2",function(d){return d.y})
 
+	var mark_line_group=progress_bar
+		.append("g")
+		.attr("id","markgroup");
+
 	var timebox = controls
 		.append("text")
 		.datum(controls_data.timebox)
@@ -477,10 +501,33 @@ function initControls(){
 	}
 }
 
+
+function updateMark(){
+
+	var mark_line_group=monitor.select("#markgroup");
+	var mark_line=mark_line_group
+		.selectAll("line")
+		.data(tracklets.marklines)
+
+	mark_line.exit().remove();
+	mark_line.enter().append("line");
+
+	mark_line.attr("class","mark_line")
+		.attr("x1",function(d){return d.x})
+		.attr("y1",function(d){return d.y1})
+		.attr("x2",function(d){return d.x})
+		.attr("y2",function(d){return d.y2})
+		.on("dblclick",function(d,i){
+			tracklets.marklines.splice(i,1);
+			console.log(tracklets.marklines)
+			})
+}
+
 function initMouseScroll() {
 	document.body.onmousewheel = function(event){
 	    var t = event || window.event;
 	    // console.log(t);
 	}
 }
+
 
