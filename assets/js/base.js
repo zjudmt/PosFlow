@@ -437,9 +437,6 @@ function initKeyBoardEvent(){
         else if(e && e.keyCode == 221){
             console.log("Ctrl + -: to be finished");
         }
-        else{
-        	// console.log("e:", e);
-        }
         else if(e && e.keyCode==65){
         	console.log("Ctrl + -: to be finished");
             rect_hide=-rect_hide;
