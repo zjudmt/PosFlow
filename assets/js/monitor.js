@@ -64,27 +64,36 @@ function initMain() {
 		.domain([0, source_video.h])
 		.range([0, layout_main.h])
 	
-	zoom = d3.zoom()
+	zoom_main = d3.zoom()
 			.scaleExtent([1, 8])
 			// .translateExtent([0,0],[0,0])
 			// .extent([[0,0],[100,100]])
-			.on("zoom", zoomed)
-	drag = d3.drag()
+			.on("zoom", zoomed_main)
+	drag_main = d3.drag()
 			.on("drag", null)
+
+	main_clip = monitor.append("clipPath")
+		.attr("id", "main-clip")
+		.append("rect")
+		.attr("height", layout_main.h)
+		.attr("width", layout_main.w)
+		// .call(zoom_main)
 
 	panel = monitor.append("rect")
 		.attr("id", "panel")
-		.attr("height", layout.monitor.main.h)
-		.attr("width", layout.monitor.main.w)
+		.attr("height", layout_main.h)
+		.attr("width", layout_main.w)
 		.style("fill", "none")
 		.style("pointer-events", "all")
-		.call(drag)
-		.call(zoom)
+		// .call(drag_main)
+		.call(zoom_main)
 
 	main = monitor.append("g")
+		.attr("clip-path", "url(#main-clip)")
+		.append("g")
 		.attr("id", "players")
 		// .call(drag)
-		.call(zoom)
+		.call(zoom_main)
 
 	path = main.append("g")
 		.attr("id", "paths")
@@ -94,10 +103,11 @@ function initMain() {
 		
 }
 
-function zoomed() {
+function zoomed_main() {
 	
 	var t = d3.event.transform;
-	t = zoomS(t); 
+	t = zoomS(t);
+	main.attr("transform", t);
 	var dom = document.getElementById('video-container');
 
 	var vid_w = layout.new_video.w;

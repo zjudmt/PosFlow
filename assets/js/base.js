@@ -103,7 +103,6 @@ function initLayout(argument) {
 
 	rect_hide=-1;
 
-
 	zoom = {
 		scale: 1,
 		x: 0,
@@ -221,6 +220,9 @@ function init(argument) {
 	frame = 0;
 	map = [];
 	selected = [];
+	last_dbclicked = -1;
+	linked_pairs = [];
+
 	initVideo();
 	initSVG();
 	initKeyBoardEvent();
@@ -441,7 +443,7 @@ function initKeyBoardEvent(){
         // 按 ] 缩小
         else if(e && e.keyCode == 221){
             console.log("Ctrl + -: to be finished");
-            // zoomIn();
+
 
         }
         // 按 Ctrl + M 标注
@@ -451,12 +453,14 @@ function initKeyBoardEvent(){
       
         else if(e && e.keyCode==72){
             rect_hide=-rect_hide;
-
         }
-        else{
-        	console.log("e:", e);
-        	// zoomOut();
-
+        else if(e && e.keyCode==65){
+        	console.log("Ctrl + -: to be finished");
+            rect_hide=-rect_hide;
+        }
+        else if(e && event.ctrlKey && e.keyCode==76) {
+        	console.log("Ctrl + L: link clicked")
+			    last_dbclicked = -1;
         }
 	};
 }

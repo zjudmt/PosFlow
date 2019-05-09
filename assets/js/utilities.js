@@ -41,7 +41,7 @@ function selectTracklet(d){
 		}
 		console.log("deselectTracklet: ", selected)
 	}
-	else{
+	else {
 		if(cur_status == "conflicted")
 			return;
 		tracklets[index].status = "selected";
@@ -233,6 +233,14 @@ function cutline(){
 }
 
 
+function exchange(){
+	console.log(d3.selectAll(".enable").size())
+	if(d3.select("#wsbuttong-3").selectAll(".enable").size()==0)//改成0
+		return 0;
+	console.log("exchange")
+
+}
+
 
 function setNewId(){
 	//设置新ID
@@ -356,14 +364,8 @@ function zoomS(t) {
 	x_s = d3.min([0, x_s]);
 	var y_s = d3.max([t.y, (1-t.k)*vid_h ]);
 	y_s = d3.min([0, y_s]);
-	if (x_s != t.x){
-		console.log("different X!", t.x, x_s);
-		t.x = x_s;
-	}
-	if (y_s != t.y){
-		console.log("different Y!", t.y, y_s);
-		t.y = y_s;
-	}
+	t.x = x_s;
+	t.y = y_s;
 	return t;
 }
 
