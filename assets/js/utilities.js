@@ -102,7 +102,8 @@ function getCurrentFrame(){
 }
 
 function trash(){
-	console.log(d3.select("#wsbuttong-1").selectAll(".enable").size())
+	if(!d3.select("#wsbuttong-3").selectAll(".enable").size())
+		return 0;
 	var garbage = selected[0];
 	var index_g = getIndexbyID(garbage.id);
 	tracklets.splice(index_g, 1);
@@ -231,13 +232,7 @@ function cutline(){
 	// console.log(tracklet2)
 }
 
-function exchange(){
-	console.log(d3.selectAll(".enable").size())
-	if(d3.select("#wsbuttong-3").selectAll(".enable").size()==0)//改成0
-		return 0;
-	console.log("exchange")
 
-}
 
 function setNewId(){
 	//设置新ID
@@ -279,24 +274,51 @@ function selectLineX2(d){
 }
 
 function load(){
-	document.getElementById("uploadFile").click(); 
+	document.getElementById("uploadTracklets").click(); 
 }
 
-function readLocalFile () {
+function selectvideo(){
+	document.getElementById("uploadVideo").click(); 
+}
+
+function readTracklets () {
         
-        var localFile = document.getElementById("uploadFile").files[0];
+        var localFile = document.getElementById("uploadTracklets").files[0];
 
         var reader = new FileReader();
        
         reader.readAsText(localFile)
         reader.onload=function(f){  
         var result=document.getElementById("fileContent");  
-    
+		
         var newdata=JSON.parse(this.result)
         
         tracklets = initData(newdata);
     } 
         
+}
+
+function readVideo(){
+	
+	var localVideo = document.getElementById("uploadVideo").files[0]
+	console.log(localVideo)
+
+	if(!/video\/\w+/.test(localVideo.type)){  
+        alert("需要选择视频！");  
+        return false;  
+    }  
+	var new_video_src = URL.createObjectURL(localVideo)
+	console.log(new_video_src)
+
+
+	video.attr("src",new_video_src)
+	// frame=0
+	svg.select("#monitor").remove()
+	initMonitor()
+	// controls_data.timebox.total_time= getTimeText( source_video.duration )
+
+	URL.revokeObjectURL(localVideo)
+
 }
 
 function save(){
@@ -311,3 +333,15 @@ function indexS(index, d) {
 	return index;
 }
 
+function markCurrentTime(){
+	console.log("mark")
+	var t=frame/25
+	var xtemp=time2x(t);
+	var new_mark={
+		x:xtemp,
+		y1:unit * lo.mark_line.y1,
+		y2:unit * lo.mark_line.y2,
+	}
+	tracklets.marklines.push(new_mark);
+	console.log(tracklets.marklines)
+}

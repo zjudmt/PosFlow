@@ -99,6 +99,15 @@ path.conflicted{
     cursor: pointer;
 }
 
+.mark_line{
+	stroke: #e20749e1 ;
+    stroke-width: 0.4em;
+    /*fill-opacity:0;*/
+    stroke-linejoin:round;
+	stroke-linecap:round;
+	cursor: pointer;
+}
+
 #ws_content line{
 	cursor: pointer;
 }

@@ -117,6 +117,8 @@ function initData(data){
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
 	}
+	if(!data.marklines)
+		data.marklines=[];
 	return data;
 }
 
@@ -288,6 +290,7 @@ function initVideo(){
 		.style("left", layout.video.x + "px" )	
 	
 	// 添加视频
+	
 	video = d3.select("#video-container")
 		.append("video")
 			.attr("width", "100%" )
@@ -297,6 +300,7 @@ function initVideo(){
 			.attr("id", "video")
 			.attr("type", "video/mp4")
 
+	
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
 
 }
@@ -423,7 +427,11 @@ function initKeyBoardEvent(){
         else if(e && event.ctrlKey && e.keyCode==101){
             console.log("Ctrl + -: to be finished");
 
-        }
+		}
+		// 按 Ctrl + M 标注
+		else if(e && event.ctrlKey && e.keyCode==77){
+			markCurrentTime();
+		}
         else if(e && e.keyCode==72){
             rect_hide=-rect_hide;
 

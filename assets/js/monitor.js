@@ -34,7 +34,7 @@ function doInitMonitor() {
 		source_video.seconds = Math.round(video_obj.duration);
 		initMain();
 		initControls();
-		flag_canplaythrough = true;
+		flag_canplaythrough = true
 	}
 }
 
@@ -141,7 +141,11 @@ function updateMain(){
 		})
 		.on("mouseout", function(d){
 			setStatus(d.id, "default")
+
+		
 	})
+
+	
 
 	// 路径生成器
 	function trackGenerator(d){
@@ -228,6 +232,7 @@ function getPlayerRectHeight(d) {
 
 function updateMonitor() {
 	updateMain();
+	updateMark();
 }
 
 // 通过时间获取
@@ -268,6 +273,10 @@ function initControls(){
 			x: 42, y: 0.75,
 			w: 6, h: 0.8,
 		},
+		mark_line:{
+			y1:0.1,
+			y2:0.4,
+		}
 	}
 	controls_data = {
 		layout: layout.monitor.controls,
@@ -304,7 +313,8 @@ function initControls(){
 			endpoint:{
 				x: unit * (lo.progress_bar.x + lo.progress_bar.w),
 			}
-		}
+		},
+		
 	}
 
 	time2x = d3.scaleLinear()
@@ -379,6 +389,10 @@ function initControls(){
 			.attr("y1",function(d){return d.y})
 			.attr("y2",function(d){return d.y})
 
+	var mark_line_group=progress_bar
+		.append("g")
+		.attr("id","markgroup");
+
 	var timebox = controls
 		.append("text")
 		.datum(controls_data.timebox)
@@ -445,3 +459,23 @@ function initControls(){
 	}
 }
 
+function updateMark(){
+
+	var mark_line_group=monitor.select("#markgroup");
+	var mark_line=mark_line_group
+		.selectAll("line")
+		.data(tracklets.marklines)
+
+	mark_line.exit().remove();
+	mark_line.enter().append("line");
+
+	mark_line.attr("class","mark_line")
+		.attr("x1",function(d){return d.x})
+		.attr("y1",function(d){return d.y1})
+		.attr("x2",function(d){return d.x})
+		.attr("y2",function(d){return d.y2})
+		.on("dblclick",function(d,i){
+			tracklets.marklines.splice(i,1);
+			console.log(tracklets.marklines)
+			})
+}
