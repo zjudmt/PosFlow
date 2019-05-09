@@ -308,13 +308,7 @@ function zoomS(t) {
 	x_s = d3.min([0, x_s]);
 	var y_s = d3.max([t.y, (1-t.k)*vid_h ]);
 	y_s = d3.min([0, y_s]);
-	if (x_s != t.x){
-		console.log("different X!", t.x, x_s);
-		t.x = x_s;
-	}
-	if (y_s != t.y){
-		console.log("different Y!", t.y, y_s);
-		t.y = y_s;
-	}
+	t.x = x_s;
+	t.y = y_s;
 	return t;
 }

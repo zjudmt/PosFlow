@@ -433,11 +433,9 @@ function initKeyBoardEvent(){
         // 按 ] 缩小
         else if(e && e.keyCode == 221){
             console.log("Ctrl + -: to be finished");
-            // zoomIn();
         }
         else{
-        	console.log("e:", e);
-        	// zoomOut();
+        	// console.log("e:", e);
         }
 	};
 }
