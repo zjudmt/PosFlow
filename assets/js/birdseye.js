@@ -111,6 +111,8 @@ function updateBirdseye(){
 			return c_name;
 		})
 		.attr("id", function(d,i){
+			if(d["status"]=="selected")
+				console.log(d["id"])
 			return "birdseye_circle" + String(i);
 		})
 		.attr("cx", function(d){
@@ -254,7 +256,7 @@ function updateBirdseye(){
 		start_index = d3.max([0, start_index]);
 
 		var end_index = frame - d["start_frame"] + future_duration;
-		end_index = d3.max([0, end_index])
+		end_index = d3.max([0, end_index]);
 		end_index = d3.min([end_index, d["boxes"].length-1]);
 
 		var path_data = [];
