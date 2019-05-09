@@ -100,12 +100,15 @@ function initLayout(argument) {
 			h: row[3].h ,
 		},
 	}
+
 	rect_hide=-1;
+
 	zoom = {
 		scale: 1,
 		x: 0,
 		y: 0
 	}
+
 }
 
 function initData(data){
@@ -122,6 +125,8 @@ function initData(data){
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
 	}
+	if(!data.marklines)
+		data.marklines=[];
 	return data;
 }
 
@@ -302,6 +307,7 @@ function initVideo(){
 		.style("left", layout.video.x + "px" )	
 	
 	// 添加视频
+	
 	video = d3.select("#video-container")
 		.append("video")
 			.attr("width", "100%" )
@@ -311,6 +317,7 @@ function initVideo(){
 			.attr("id", "video")
 			.attr("type", "video/mp4")
 
+	
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
 
 }
@@ -436,18 +443,24 @@ function initKeyBoardEvent(){
         // 按 ] 缩小
         else if(e && e.keyCode == 221){
             console.log("Ctrl + -: to be finished");
+
+
         }
-        else{
-        	// console.log("e:", e);
+        // 按 Ctrl + M 标注
+        else if(e && event.ctrlKey && e.keyCode==77){
+          markCurrentTime();
+        }
+      
+        else if(e && e.keyCode==72){
+            rect_hide=-rect_hide;
         }
         else if(e && e.keyCode==65){
         	console.log("Ctrl + -: to be finished");
             rect_hide=-rect_hide;
-
         }
         else if(e && event.ctrlKey && e.keyCode==76) {
         	console.log("Ctrl + L: link clicked")
-			last_dbclicked = -1;
+			    last_dbclicked = -1;
         }
 	};
 }
