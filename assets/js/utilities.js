@@ -307,3 +307,16 @@ function indexS(index, d) {
 	return index;
 }
 
+function zoomS(t) {
+	// var vid_w = viewBox.w;
+	// var vid_h = viewBox.w / source_video.ratio;
+	var vid_w = viewBox.w;
+	var vid_h = viewBox.w * source_video.ratio;
+	var x_s = d3.max([t.x, (1-t.k)*vid_w ]);
+	x_s = d3.min([0, x_s]);
+	var y_s = d3.max([t.y, (1-t.k)*vid_h ]);
+	y_s = d3.min([0, y_s]);
+	t.x = x_s;
+	t.y = y_s;
+	return t;
+}

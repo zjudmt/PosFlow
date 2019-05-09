@@ -101,6 +101,11 @@ function initLayout(argument) {
 		},
 	}
 	rect_hide=-1;
+	zoom = {
+		scale: 1,
+		x: 0,
+		y: 0
+	}
 }
 
 function initData(data){
@@ -194,7 +199,7 @@ function init(argument) {
 	source_video = {
 		w: 3840,
 		h: 800,
-		ratio: 24/5,
+		ratio: 5/24,
 		fps: 25,
 		src: "/resources/PosFlow/first_half.mp4",
 	};
@@ -202,7 +207,6 @@ function init(argument) {
 		fps: 25,
 		src: "/resources/PosFlow/Germany_tracklets.json",
 	}
-	
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
 	colorScale = d3.scaleSequential()
@@ -279,14 +283,21 @@ function initSVG(){
 				return str;
 			})
 
-
+	image_bg = svg.append("image")
+		.attr("id", "image_bg")
+		.attr("width", "100%")
+		.attr("width", "100%")
+		.attr("xlink:href", "/resources/PosFlow/img/image_bg.png")
 }
 
 function initVideo(){
 	// 添加video-container的div并设置布局
-	d3.select("body")
+	video_container = d3.select("body")
 		.append("div")
+		.attr("width", viewport.w)
+		.attr("height", viewport.h)
 		.attr("id","video-container")
+		.style("position", "fixed")
 		.style("top", layout.video.y + "px" )
 		.style("left", layout.video.x + "px" )	
 	
@@ -323,7 +334,7 @@ function updateLayout() {
 			x: 0,
 			y: (row[0].h + row[1].h) * viewport.scale ,
 			w: window.innerWidth,
-			h: viewport.h * viewport.scale,
+			h: window.innerWidth * source_video.ratio,
 		}
 	d3.select("#video-container")
 		.style("top", layout.new_video.y + "px" )
@@ -417,15 +428,17 @@ function initKeyBoardEvent(){
             console.log("Ctrl + Z: to be finished");
 
         }
-        // 按 Ctrl + + 放大
-        else if(e && event.ctrlKey && e.keyCode==99){
+        // 按 [ 放大
+        else if(e && e.keyCode == 219){
             console.log("Ctrl + +: to be finished");
 
         }
-        // 按 Ctrl + - 缩小
-        else if(e && event.ctrlKey && e.keyCode==101){
+        // 按 ] 缩小
+        else if(e && e.keyCode == 221){
             console.log("Ctrl + -: to be finished");
-
+        }
+        else{
+        	// console.log("e:", e);
         }
         else if(e && e.keyCode==65){
         	console.log("Ctrl + -: to be finished");
