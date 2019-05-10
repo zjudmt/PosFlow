@@ -10,7 +10,6 @@ function initLayout(argument) {
 	// on my laptop w = 1536, h = 864 w/h = 48/27
 		scale: window.innerWidth / 1536,
 	};
-	console.log("viewport: ", viewport);
 	viewBox = {
 		x : 0,
 		y : 0,
@@ -102,8 +101,14 @@ function initLayout(argument) {
 		},
 	}
 
-	console.log("layout: ", layout);
-	console.log("basepoint: ", basepoint);
+	rect_hide=-1;
+
+	zoom = {
+		scale: 1,
+		x: 0,
+		y: 0
+	}
+
 }
 
 function initData(data){
@@ -113,7 +118,6 @@ function initData(data){
 		"selected": "selected",
 		"conflicted": "conflicted"
 	};
-	console.log("initData: ", data.length)
 	for(var i = 0; i < data.length; ++i){
 		data[i]["status"] = status_t["default"];
 		data[i]["end_frame"] = data[i].start_frame + data[i].boxes.length - 1;
@@ -121,16 +125,86 @@ function initData(data){
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
 	}
+	if(!data.marklines)
+		data.marklines=[];
 	return data;
+}
+
+function filterData(data){
+	min_frames = 5;
+	for(var i = 0; i < data.length; ++i){
+		var flag = false;
+		// tracklet时间不能短于5帧
+		if(data[i]["end_frame"]-data[i]["start_frame"] < min_frames){
+			flag = true;	
+		}
+		// 球员开始的位置和结束及中间三个的位置一共五个位置至少有一个在场内
+		else
+		{
+			var count = 0;
+			var end_index = d3.max([0, data[i]["boxes"].length-1]);
+			for(var j = 0; j < 5; ++j){
+				if(!inField(data[i]["boxes"][Math.floor(j*end_index/4)])){
+					count++;
+				}
+				else{
+					break;
+				}
+			}
+			if(count == 5){
+				flag = true;
+			}
+		}
+		// 如果tracklet少于5帧，或被判断在场外，就从预处理数据中删掉
+		if(flag == true){
+			data.splice(i,1);
+			--i;
+		}
+	}
+	return data;
+}
+
+function inField(box){
+	field_corners = [{x:1050, y:235}, {x:2783, y:235}, {x:3800, y:785}, {x:56, y:785}];
+
+	var player = {x:box[0]+box[2]/2, y:box[1]+box[3]};
+
+	var degree_sum = 0;
+	for(var i = 0; i < 4; ++i){
+		var edge_vec1 = {x:player.x-field_corners[i].x, y:player.y-field_corners[i].y};
+		var edge_vec2 = {x:player.x-field_corners[(i+1)%4].x, y:player.y-field_corners[(i+1)%4].y};
+		var norm1 = Math.sqrt(dotProduct(edge_vec1, edge_vec1));
+		var norm2 = Math.sqrt(dotProduct(edge_vec2, edge_vec2));
+		// at the corner, prevent dividing zero.
+		if(norm1==0 || norm2==0)
+			return true;
+		var product = dotProduct(edge_vec1,edge_vec2)/(norm1*norm2);
+		degree_sum += Math.acos(product);
+	}
+	return degree_sum < 2*Math.PI-0.01 ? false : true;
+}
+
+function dotProduct(vec1, vec2){
+	return vec1.x*vec2.x+vec1.y*vec2.y;
+}
+
+
+function test() {
+	var ar = []
+	for (var i = 10 - 1; i >= 0; i--) {
+		ar.push(i);
+	}
+	console.log(ar);
 }
 
 
 function init(argument) {
+	// test();
 	initLayout();
 	source_video = {
 		w: 3840,
 		h: 800,
-		ratio: 24/5,
+		ratio: 5/24,
 		fps: 25,
 		src: "/resources/PosFlow/first_half.mp4",
 	};
@@ -138,7 +212,6 @@ function init(argument) {
 		fps: 25,
 		src: "/resources/PosFlow/Germany_tracklets.json",
 	}
-	
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
 	colorScale = d3.scaleSequential()
@@ -147,11 +220,15 @@ function init(argument) {
 	frame = 0;
 	map = [];
 	selected = [];
+	last_dbclicked = -1;
+	linked_pairs = [];
+
 	initVideo();
 	initSVG();
 	initKeyBoardEvent();
 
 	d3.json(source_data.src, function(error, data){
+		data = filterData(data);
 		tracklets = initData(data);
 		cur_data = getTrackletsByFrame(tracklets, 0)
 		current_tracklets = cur_data[0];
@@ -169,7 +246,8 @@ function update(elapsed) {
 	interval = elapsed - last;
 	frame = getCurrentFrame();
 	fps = (1000/interval)
-	if(fps < 20)
+  
+	if(fps < 10)
 		console.log("fps", fps, " at frame: ", frame);
 	map = [];
 	cur_data = getTrackletsByFrame(tracklets, frame)
@@ -209,18 +287,26 @@ function initSVG(){
 				return str;
 			})
 
-
+	image_bg = svg.append("image")
+		.attr("id", "image_bg")
+		.attr("width", "100%")
+		.attr("width", "100%")
+		.attr("xlink:href", "/resources/PosFlow/img/image_bg.png")
 }
 
 function initVideo(){
 	// 添加video-container的div并设置布局
-	d3.select("body")
+	video_container = d3.select("body")
 		.append("div")
+		.attr("width", viewport.w)
+		.attr("height", viewport.h)
 		.attr("id","video-container")
+		.style("position", "fixed")
 		.style("top", layout.video.y + "px" )
 		.style("left", layout.video.x + "px" )	
 	
 	// 添加视频
+	
 	video = d3.select("#video-container")
 		.append("video")
 			.attr("width", "100%" )
@@ -230,6 +316,7 @@ function initVideo(){
 			.attr("id", "video")
 			.attr("type", "video/mp4")
 
+	
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
 
 }
@@ -253,7 +340,7 @@ function updateLayout() {
 			x: 0,
 			y: (row[0].h + row[1].h) * viewport.scale ,
 			w: window.innerWidth,
-			h: viewport.h * viewport.scale,
+			h: window.innerWidth * source_video.ratio,
 		}
 	d3.select("#video-container")
 		.style("top", layout.new_video.y + "px" )
@@ -325,7 +412,6 @@ function initKeyBoardEvent(){
         // 按 Ctrl + O 载入
         else if(e && event.ctrlKey && e.keyCode==79){
             console.log("Ctrl + O: ask lin to do");
-
         }
         // 按 Ctrl + C 合并
         else if(e && event.ctrlKey && e.keyCode==67){
@@ -347,15 +433,33 @@ function initKeyBoardEvent(){
             console.log("Ctrl + Z: to be finished");
 
         }
-        // 按 Ctrl + + 放大
-        else if(e && event.ctrlKey && e.keyCode==99){
+        // 按 [ 放大
+        else if(e && e.keyCode == 219){
             console.log("Ctrl + +: to be finished");
 
         }
-        // 按 Ctrl + - 缩小
-        else if(e && event.ctrlKey && e.keyCode==101){
+        // 按 ] 缩小
+        else if(e && e.keyCode == 221){
             console.log("Ctrl + -: to be finished");
 
+
+        }
+        // 按 Ctrl + M 标注
+        else if(e && event.ctrlKey && e.keyCode==77){
+          markCurrentTime();
+        }
+      
+        else if(e && e.keyCode==72){
+            rect_hide=-rect_hide;
+        }
+
+        else if(e && e.keyCode==65){
+        	console.log("Ctrl + -: to be finished");
+            rect_hide=-rect_hide;
+        }
+        else if(e && event.ctrlKey && e.keyCode==76) {
+        	console.log("Ctrl + L: link clicked")
+			    last_dbclicked = -1;
         }
 	};
 }
