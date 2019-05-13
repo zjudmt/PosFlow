@@ -11,7 +11,7 @@ function initBirdseye(){
 
 	// append the play field image as the background image
 	var image = birdseyeLayout.append("svg:image")
-				.attr("xlink:href", "/resources/PosFlow/img/field.png")
+				.attr("xlink:href", "../resources/PosFlow/img/field.png")
 				.attr("transform", function(){
 					return "translate("+ x + "," + y + ")";
 				})
