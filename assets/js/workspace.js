@@ -67,6 +67,7 @@ function initWorkspace(){
 	buttonarea.select("#wsbutton-5").append("title").text("load")
 	buttonarea.select("#wsbutton-6").append("title").text("save")
 
+	buttonarea.select("#wsbutton-4").classed("enable",true)
 	buttonarea.select("#wsbutton-5").classed("enable",true)
 	buttonarea.select("#wsbutton-6").classed("enable",true)
 	

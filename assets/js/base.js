@@ -124,6 +124,17 @@ function initData(data){
 		data[i]["color"] =  getColorByID(data[i].id);
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
+		else{
+			console.log("hhh")
+			//删除有重合的interpolation以及结束帧小于等于开始帧的interpolation
+			for(let j = 1; j < data[i]["interpolation"].length; ++j){
+				if(data[i]["interpolation"][j][0]<=data[i]["interpolation"][j-1][1]||data[i]["interpolation"][j][0]>=data[i]["interpolation"][j][1]){
+					data[i]['interpolation'].splice(j,1)
+					
+					j--;
+				}
+			}
+		}
 	}
 	if(!data.marklines)
 		data.marklines=[];
@@ -228,7 +239,13 @@ function init(argument) {
 	initKeyBoardEvent();
 
 	d3.json(source_data.src, function(error, data){
-		data = filterData(data);
+		if(error){
+			alert("请选择正确的json文件路径")
+			data=[];
+		}
+		else
+			data = filterData(data);
+
 		tracklets = initData(data);
 		cur_data = getTrackletsByFrame(tracklets, 0)
 		current_tracklets = cur_data[0];

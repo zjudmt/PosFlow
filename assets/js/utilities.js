@@ -176,7 +176,9 @@ function cutline(){
 	var index_inter = -1, old_end, new_start
 	var new_end = tracklet1.end_frame;
 	for(var i=0;i<tracklet1.interpolation.length;i++){
-		if(frame>=tracklet1.interpolation[i][0]&&frame<=tracklet1.interpolation[i][1]){
+		//考虑在interpolation边缘的剪切情况，由注释中代码改为现代码
+		// if(frame>=tracklet1.interpolation[i][0]&&frame<=tracklet1.interpolation[i][1]){
+		if(frame>=(tracklet1.interpolation[i][0]-1)&&frame<=(tracklet1.interpolation[i][1]+1)){
 			index_inter=i;
 			break;
 		}
@@ -290,7 +292,7 @@ function selectvideo(){
 }
 
 function readTracklets () {
-        
+        selected=[];
         var localFile = document.getElementById("uploadTracklets").files[0];
 
         var reader = new FileReader();
