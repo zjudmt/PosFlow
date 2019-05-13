@@ -217,7 +217,7 @@ function init(argument) {
 		h: 800,
 		ratio: 5/24,
 		fps: 25,
-		src: "../resources/PosFlow/first_half.mp4",
+		src: "../resources/PosFlow/first_halfa.mp4",
 	};
 	source_data = {
 		fps: 25,
@@ -325,14 +325,34 @@ function initVideo(){
 	
 	// 添加视频
 	
-	video = d3.select("#video-container")
-		.append("video")
+	// video = d3.select("#video-container")
+	// 	.append("video")
+	// 		.attr("width", "100%" )
+	// 		.attr("controls", "false")
+	// 		.attr("preload", "auto")
+	// 		.attr("src", source_video.src) //源视频文件位置
+	// 		.attr("id", "video")
+	// 		.attr("type", "video/mp4")
+
+		p1=new Promise(function(resolve,reject){
+			video = d3.select("#video-container")
+			.append("video")
 			.attr("width", "100%" )
 			.attr("controls", "false")
 			.attr("preload", "auto")
 			.attr("src", source_video.src) //源视频文件位置
 			.attr("id", "video")
 			.attr("type", "video/mp4")
+			
+			video._groups[0][0].oncanplay=(()=>{resolve()});
+			video._groups[0][0].onerror=(()=>{reject()});
+			
+
+		
+		})
+		p1.then(()=>{console.log("load video success")})
+			.catch(()=>{alert("请选择正确的视频源")})
+
 
 	
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长
