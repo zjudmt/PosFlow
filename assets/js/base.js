@@ -217,7 +217,7 @@ function init(argument) {
 		h: 800,
 		ratio: 5/24,
 		fps: 25,
-		src: "../resources/PosFlow/first_halfa.mp4",
+		src: "../resources/PosFlow/first_half.mp4",
 	};
 	source_data = {
 		fps: 25,
