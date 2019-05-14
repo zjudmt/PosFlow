@@ -10,7 +10,6 @@ function initMonitor() {
 				+ " , " + d.y + " )";
 				return str
 			})
-			
 
 	// 用flag_canplaythrough来判断是否已经初始化过monitor了
 	flag_canplaythrough = false;
@@ -100,7 +99,10 @@ function initMain() {
 
 	rect = main.append("g")
 		.attr("id", "rects")
-		
+
+	line = main.append("g")
+		.attr("id", "lines")
+
 }
 
 function zoomed_main() {
@@ -135,16 +137,19 @@ function updateMain(){
 	rects = main.select("#rects")
 		.selectAll("rect").data(current_tracklets)
 
+	lines = main.select("#lines")
+		.selectAll("line").data(getLinkData())
 
 
 	// 如果有多的元素就remove掉
 	paths.exit().remove();
 	rects.exit().remove();
+	lines.exit().remove();
 
 	// 如果需要新的元素就添加
 	new_paths =  paths.enter().append("path")
 	new_rects =  rects.enter().append("rect")
-
+	new_lines =  lines.enter().append("line")
 
 
 	// 在绑定矩形之前先绑定路径,避免矩形被路径遮挡
@@ -163,6 +168,46 @@ function updateMain(){
 			else
 				return d.color;
 	});
+
+	lines.attr("class", "main line")
+		.attr("id", function(d, i) {
+			return "main_line" + String(i);
+		})
+		.attr("x1", function(d) {
+			return vid2x(d["box1"][0]) + vid2x(d["box1"][2] / 2 );
+		})
+		.attr("x2", function(d) {
+			return vid2x(d["box2"][0]) + vid2x(d["box2"][2] / 2 );
+		})
+		.attr("y1", function(d) {
+			return vid2x(d["box1"][1]) + vid2x(d["box1"][3] / 2 );
+		})
+		.attr("y2", function(d) {
+			return vid2x(d["box2"][1]) + vid2x(d["box2"][3] / 2 );
+		})
+		.attr("stroke", function(d) {
+			var id = d["id1"];
+			for(var found = true; found; ) {
+				found = false;
+				for (var i = 0; i < linked_pairs.length; ++i) {
+					if (linked_pairs[i][1] == id) {
+						id = linked_pairs[i][0];
+						found = true;
+						break;
+					}
+				}
+			}
+			// console.log(linked_pairs);
+			// console.log(getColorByID(id))
+			return getColorByID(id);
+		})
+		.attr("stroke-width", "5")
+		.attr("stroke-opacity", "0.2")
+		.attr("cursor", "crosshair")
+		.on("dblclick", removeLink);
+
+
+
 
 	// 绑定矩形,长宽通过比例尺计算 同时绑定操作元素
 	rects.attr("transform", getPlayerTransform)
@@ -187,6 +232,8 @@ function updateMain(){
 			else
 				return "";
 		})
+		.on("click", selectTracklet)
+		.on("dblclick", appendLink)
 		.on("click", selectTracklet )
 		.on("mouseover", function(d){
 			setStatus(d.id, "hover")
@@ -197,7 +244,70 @@ function updateMain(){
 		
 	})
 
-	
+	function getLinkData() {
+		var line_data = [];
+		for (var k = linked_pairs.length - 1; k >= 0; --k) {
+			for (var i = current_tracklets.length - 1; i >= 0; --i) {
+				if (linked_pairs[k][0] == current_tracklets[i]["id"]) {
+					for (var j = current_tracklets.length - 1; j >= 0; --j) {
+						if(linked_pairs[k][1] == current_tracklets[j]["id"]) {
+							var start_frame = current_tracklets[i]["start_frame"];
+							line_data.push(
+							{
+								"id1" : linked_pairs[k][0],
+							    "id2" : linked_pairs[k][1],
+							    "box1" : current_tracklets[i]["boxes"][frame-start_frame],
+							    "box2" : current_tracklets[j]["boxes"][frame-start_frame]
+							})
+						}
+					}
+				}
+			}
+		}
+		return line_data;
+	}
+
+	function removeLink(d) {
+		console.log("remove link")
+		for (var i = 0; i < linked_pairs.length; ++i) {
+			if (linked_pairs[i][0] == d["id1"] && linked_pairs[i][1] == d["id2"]) {
+				linked_pairs.splice(i--, 1);
+			}
+		}
+	}
+
+	function appendLink(d) {
+		console.log("append link")
+		if (last_dbclicked == -1) {
+			last_dbclicked = d["id"];
+		} else {
+			var found = false;
+			for (var i = current_tracklets.length - 1; i >= 0; --i) {
+				if (current_tracklets[i]["id"] == last_dbclicked) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				last_dbclicked = -1;
+			} else {
+				found = false;
+				for (var i = linked_pairs.length - 1; i >= 0; --i) {
+					if (linked_pairs[i][0] == last_dbclicked && linked_pairs[i][1] == d["id"]) {
+						found = true;
+						break;
+					} else if (linked_pairs[i][0] == d["id"] && linked_pairs[i][1] == last_dbclicked){
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					linked_pairs.push([last_dbclicked, d["id"]]);
+				}
+				last_dbclicked = d["id"];
+			}
+		}
+	}
 
 	// 路径生成器
 	function trackGenerator(d){
