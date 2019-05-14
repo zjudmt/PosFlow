@@ -239,7 +239,7 @@ function update(elapsed) {
 	fps = (1000/interval)
   
 	if(fps < 10)
-		console.log("fps", fps, " at frame: ", frame);
+		// console.log("fps", fps, " at frame: ", frame);
 	
 	map = [];
 	cur_data = getTrackletsByFrame(tracklets, frame)

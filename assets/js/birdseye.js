@@ -130,7 +130,7 @@ function updateBirdseye(){
 					}
 				}
 			}
-			console.log(linked_pairs);
+			// console.log(linked_pairs);
 			// console.log(getColorByID(id))
 			return getColorByID(id);
 		})
