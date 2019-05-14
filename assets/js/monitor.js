@@ -84,8 +84,18 @@ function initMain() {
 		.attr("width", layout_main.w)
 		.style("fill", "none")
 		.style("pointer-events", "all")
+		.on("click", function() {
+			last_dbclicked = -1;
+		})
 		// .call(drag_main)
 		.call(zoom_main)
+		.on("mousemove", updateMousePosition)
+		.on("mouseover", function() {
+			cursor_on_main = true;
+		})
+		.on("mouseout", function() {
+			cursor_on_main = false;
+		})
 
 	main = monitor.append("g")
 		.attr("clip-path", "url(#main-clip)")
@@ -102,6 +112,25 @@ function initMain() {
 
 	line = main.append("g")
 		.attr("id", "lines")
+
+	main_mouse_position = {x : -1, y : -1};
+    cursor_on_main = false;
+
+
+	function updateMousePosition() {
+		main_mouse_position = mousePosition(window.event)
+	}
+
+	function mousePosition(e) {
+    	if(e.pageX || e.pageY){  //ff,chrome等浏览器
+			return {x:e.pageX - 2, y:e.pageY - 2};
+	    } else {
+			return {  //ie浏览器
+                x:e.clientX + document.body.scrollLeft - document.body.clientLeft,
+                y:e.clientY + document.body.scrollTop - document.body.clientTop
+			}
+     	}
+	}
 
 }
 
@@ -201,12 +230,45 @@ function updateMain(){
 			// console.log(getColorByID(id))
 			return getColorByID(id);
 		})
-		.attr("stroke-width", "5")
+		.attr("stroke-width", "3")
 		.attr("stroke-opacity", "0.2")
 		.attr("cursor", "crosshair")
 		.on("dblclick", removeLink);
 
-
+	d3.select("#main_assist_link_line").remove()
+	if (last_dbclicked != -1 && cursor_on_main) {
+		var start_box;
+		var index = current_tracklets.length - 1;
+		for (; index >= 0; --index) {
+			if (current_tracklets[index]["id"] == last_dbclicked) {
+				var start_frame = current_tracklets[index]["start_frame"];
+				start_box = current_tracklets[index]["boxes"][frame-start_frame];
+				break;
+			}
+		}
+		var scale = window.innerWidth / 1536;
+		main.append("line")
+				.attr("id", "main_assist_link_line")
+				.attr("x1", function(d) {
+					return main_mouse_position.x / scale;
+				})
+				.attr("x2", function(d) {
+					return vid2x(start_box[0]) + vid2x(start_box[2] / 2 );
+				})
+				.attr("y1", function(d) {
+					return (main_mouse_position.y) / scale - layout.monitor.y;
+				})
+				.attr("y2", function(d) {
+					return vid2x(start_box[1]) + vid2x(start_box[3] / 2 );
+				})
+				.attr("stroke", "gray")
+				.attr("stroke-width", "3")
+				.attr("stroke-opacity", "0.2")
+				.attr("cursor", "crosshair")
+				.on("click", function() {
+					last_dbclicked = -1;
+				});
+	}
 
 
 	// 绑定矩形,长宽通过比例尺计算 同时绑定操作元素
@@ -236,9 +298,11 @@ function updateMain(){
 		.on("dblclick", appendLink)
 		.on("click", selectTracklet )
 		.on("mouseover", function(d){
+			cursor_on_main = true
 			setStatus(d.id, "hover")
 		})
 		.on("mouseout", function(d){
+			cursor_on_main = false
 			setStatus(d.id, "default")
 
 		

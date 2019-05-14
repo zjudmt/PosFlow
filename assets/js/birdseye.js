@@ -11,6 +11,7 @@ function initBirdseye(){
 
 	// mouse position
     mouse_position = {x : -1, y : -1};
+    cursor_on_birdseye = false;
 
 	// append the play field image as the background image
 	var image = birdseyeLayout.append("svg:image")
@@ -23,7 +24,13 @@ function initBirdseye(){
             	.on("click", function(){
             		last_dbclicked = -1;
             	})
-				.on("mousemove", updateMousePosition);
+				.on("mousemove", updateMousePosition)
+				.on("mouseover", function() {
+					cursor_on_birdseye = true;
+				})
+				.on("mouseout", function() {
+					cursor_on_birdseye = false;
+				});
 
 
     // append the group of the birdseye_paths for the paths of the players
@@ -39,6 +46,12 @@ function initBirdseye(){
 
 	function updateMousePosition() {
 		mouse_position = mousePosition(window.event)
+		var scale = window.innerWidth / 1536;
+
+		var x = layout.birdseye.x;
+		var y = layout.birdseye.y;
+		var w = layout.birdseye.w;
+		var h = layout.birdseye.h;
 	}
 
 	function mousePosition(e) {
@@ -140,7 +153,7 @@ function updateBirdseye(){
 		.on("dblclick", removeLink);
 
 	d3.select("#birdseye_assist_link_line").remove()
-	if (last_dbclicked != -1) {
+	if (last_dbclicked != -1 && cursor_on_birdseye) {
 		var start_box;
 		var index = current_tracklets.length - 1;
 		for (; index >= 0; --index) {
@@ -231,9 +244,11 @@ function updateBirdseye(){
 		.on("click", selectTracklet)
 		.on("dblclick", appendLink)
 		.on("mouseover", function(d){
+			cursor_on_birdseye = true;
 			setStatus(d["id"], "hover");
 		})
 		.on("mouseout", function(d){
+			cursor_on_birdseye = false;
 			setStatus(d["id"], "default");
 		})
 
