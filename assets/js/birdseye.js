@@ -9,6 +9,10 @@ function initBirdseye(){
 						.append("g")
 						.attr("id", "birdseye");
 
+	// mouse position
+    mouse_position = {x : -1, y : -1};
+    cursor_on_birdseye = false;
+
 	// append the play field image as the background image
 	var image = birdseyeLayout.append("svg:image")
 				.attr("xlink:href", "../resources/PosFlow/img/field.png")
@@ -16,7 +20,18 @@ function initBirdseye(){
 					return "translate("+ x + "," + y + ")";
 				})
             	.attr("width", width)
-            	.attr("height", height);
+            	.attr("height", height)
+            	.on("click", function(){
+            		last_dbclicked = -1;
+            	})
+				.on("mousemove", updateMousePosition)
+				.on("mouseover", function() {
+					cursor_on_birdseye = true;
+				})
+				.on("mouseout", function() {
+					cursor_on_birdseye = false;
+				});
+
 
     // append the group of the birdseye_paths for the paths of the players
 	birdseyeLayout.append("g")
@@ -27,9 +42,36 @@ function initBirdseye(){
     // append the group of the birdseye_circles for the positions of the players
 	birdseyeLayout.append("g")
 				.attr("id", "birdseye_circles")
+
+
+	function updateMousePosition() {
+		mouse_position = mousePosition(window.event)
+		var scale = window.innerWidth / 1536;
+
+		var x = layout.birdseye.x;
+		var y = layout.birdseye.y;
+		var w = layout.birdseye.w;
+		var h = layout.birdseye.h;
+	}
+
+	function mousePosition(e) {
+    	if(e.pageX || e.pageY){  //ff,chrome等浏览器
+			return {x:e.pageX - 2, y:e.pageY - 2};
+	    } else {
+			return {  //ie浏览器
+                x:e.clientX + document.body.scrollLeft - document.body.clientLeft,
+                y:e.clientY + document.body.scrollTop - document.body.clientTop
+			}
+     	}
+	}
 }
 
 function updateBirdseye(){
+	// d3.select("svg").append("circle")
+	// .attr("r", 10)
+	// .attr("cx", mouse_position.x)
+	// .attr("cy", mouse_position.y)
+
 	var x = layout.birdseye.x;
 	var y = layout.birdseye.y;
 	var width = layout.birdseye.w;
@@ -89,10 +131,61 @@ function updateBirdseye(){
 		.attr("y2", function(d) {
 			return yScale(birdseyeTransition(d["box2"])["y"]);
 		})
-		.attr("stroke", "gray")
+		.attr("stroke", function(d) {
+			var id = d["id1"];
+			for(var found = true; found; ) {
+				found = false;
+				for (var i = 0; i < linked_pairs.length; ++i) {
+					if (linked_pairs[i][1] == id) {
+						id = linked_pairs[i][0];
+						found = true;
+						break;
+					}
+				}
+			}
+			// console.log(linked_pairs);
+			// console.log(getColorByID(id))
+			return getColorByID(id);
+		})
 		.attr("stroke-width", "5")
 		.attr("stroke-opacity", "0.2")
+		.attr("cursor", "crosshair")
 		.on("dblclick", removeLink);
+
+	d3.select("#birdseye_assist_link_line").remove()
+	if (last_dbclicked != -1 && cursor_on_birdseye) {
+		var start_box;
+		var index = current_tracklets.length - 1;
+		for (; index >= 0; --index) {
+			if (current_tracklets[index]["id"] == last_dbclicked) {
+				var start_frame = current_tracklets[index]["start_frame"];
+				start_box = current_tracklets[index]["boxes"][frame-start_frame];
+				break;
+			}
+		}
+		var scale = window.innerWidth / 1536;
+		birdseyeLayout.append("line")
+				.attr("id", "birdseye_assist_link_line")
+				.attr("x1", function(d) {
+					return mouse_position.x / scale;
+				})
+				.attr("x2", function(d) {
+					return xScale(birdseyeTransition(start_box)["x"]);
+				})
+				.attr("y1", function(d) {
+					return mouse_position.y / scale;
+				})
+				.attr("y2", function(d) {
+					return yScale(birdseyeTransition(start_box)["y"]);
+				})
+				.attr("stroke", "gray")
+				.attr("stroke-width", "5")
+				.attr("stroke-opacity", "0.2")
+				.attr("cursor", "crosshair")
+				.on("click", function() {
+					last_dbclicked = -1;
+				});
+	}
 
 
 	// select all circles in birdseye view 
@@ -100,7 +193,7 @@ function updateBirdseye(){
 							.selectAll("circle")
 							.data(current_tracklets)
 	// fit the numbers of elements with the data
-	circles.exit().remove()
+	circles.exit().select()
 	circles.enter().append("circle")
 	// set attributes of the elements
 	circles.attr("class", function(d){
@@ -153,9 +246,11 @@ function updateBirdseye(){
 		.on("click", selectTracklet)
 		.on("dblclick", appendLink)
 		.on("mouseover", function(d){
+			cursor_on_birdseye = true;
 			setStatus(d["id"], "hover");
 		})
 		.on("mouseout", function(d){
+			cursor_on_birdseye = false;
 			setStatus(d["id"], "default");
 		})
 
@@ -209,11 +304,6 @@ function updateBirdseye(){
 					linked_pairs.push([last_dbclicked, d["id"]]);
 				}
 				last_dbclicked = d["id"];
-				for (var i = linked_pairs.length - 1; i >= 0; --i) {
-					console.log(linked_pairs[i]);
-				}
-				console.log("linked data");
-				console.log(getLinkData());
 			}
 		}
 	}
@@ -240,6 +330,7 @@ function updateBirdseye(){
 		}
 		return line_data;
 	}
+	
 
 	// generate the path string
 	function trackGenerator(d){
