@@ -216,8 +216,6 @@ function updateWorkspace(){
 
 
 
-
-
 	var area_selected=d3.select("#content-selected")
 	var area_toselect=d3.select("#content-toselect")
 
@@ -230,6 +228,14 @@ function updateWorkspace(){
 
 	cut_button.classed("enable",false);
 	trash_button.classed("enable",false);
+
+	// 如果tracklets为空, 则不能下载
+	if (!tracklets){
+		buttonarea.select("#wsbutton-6").classed("enable",false)
+	}
+	else{
+		buttonarea.select("#wsbutton-6").classed("enable",true)
+	}
 
 	if(selected.length==2)
 		merge_button.classed("enable",true)
