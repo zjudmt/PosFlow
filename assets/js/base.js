@@ -265,7 +265,6 @@ function update(elapsed) {
   
 	if(fps < 10)
 		console.log("fps", fps, " at frame: ", frame);
-	
 	map = [];
 	cur_data = getTrackletsByFrame(tracklets, frame)
 	current_tracklets = cur_data[0];
@@ -450,7 +449,6 @@ function initKeyBoardEvent(){
         // 按 Ctrl + O 载入
         else if(e && event.ctrlKey && e.keyCode==79){
             console.log("Ctrl + O: ask lin to do");
-
         }
         // 按 Ctrl + C 合并
         else if(e && event.ctrlKey && e.keyCode==67){
@@ -483,7 +481,6 @@ function initKeyBoardEvent(){
 
 
         }
-
         // 按 Ctrl + M 标注
         else if(e && event.ctrlKey && e.keyCode==77){
           markCurrentTime();

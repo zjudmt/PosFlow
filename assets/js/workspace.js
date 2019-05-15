@@ -60,7 +60,6 @@ function initWorkspace(){
 	// var button_merge= buttonarea.select("#wsbutton-1")
 	buttonarea.select("#wsbutton-1").append("title").text("merge")
 	buttonarea.select("#wsbutton-2").append("title").text("cut")
-
 	buttonarea.select("#wsbutton-3").append("title").text("delete")
 	buttonarea.select("#wsbutton-4").append("title").text("selectvideo")
 
@@ -74,6 +73,7 @@ function initWorkspace(){
 	buttonarea.select("#wsbutton-1").on("click",merge)
 	buttonarea.select("#wsbutton-2").on("click",cutline)
 	buttonarea.select("#wsbutton-3").on("click",trash)
+
 	buttonarea.select("#wsbutton-4").on("click",selectvideo)
 
 	buttonarea.select("#wsbutton-5")
@@ -217,8 +217,6 @@ function updateWorkspace(){
 
 
 
-
-
 	var area_selected=d3.select("#content-selected")
 	var area_toselect=d3.select("#content-toselect")
 
@@ -231,6 +229,14 @@ function updateWorkspace(){
 
 	cut_button.classed("enable",false);
 	trash_button.classed("enable",false);
+
+	// 如果tracklets为空, 则不能下载
+	if (!tracklets){
+		buttonarea.select("#wsbutton-6").classed("enable",false)
+	}
+	else{
+		buttonarea.select("#wsbutton-6").classed("enable",true)
+	}
 
 	if(selected.length==2)
 		merge_button.classed("enable",true)
@@ -394,6 +400,7 @@ function updateWorkspace(){
 	function s_dashGenerator(d){
 		if(!d["interpolation"][0])
 			return "";
+
 		// 找能显示长方形的端点时间[t1, t2]
 		var t1 = d["start_frame"];
 		if(d["end_frame"] < frame-past_duration+25){
@@ -406,8 +413,6 @@ function updateWorkspace(){
 			t1 = frame-past_duration;
 		}
 		var t2 = d["end_frame"];
-		// console.log(t1,t2)
-
 		// 找到虚线可能的起始点， 找不到为数组长度
 		var dash_index = d["interpolation"].length;
 		for(var i = 0, len = d["interpolation"].length; i < len; ++i){
@@ -462,6 +467,5 @@ function updateWorkspace(){
 		// }
 		return dash_str;
 	}
-		
 	
 }
