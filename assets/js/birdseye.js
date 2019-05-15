@@ -9,14 +9,29 @@ function initBirdseye(){
 						.append("g")
 						.attr("id", "birdseye");
 
+	// mouse position
+    mouse_position = {x : -1, y : -1};
+    cursor_on_birdseye = false;
+
 	// append the play field image as the background image
 	var image = birdseyeLayout.append("svg:image")
-				.attr("xlink:href", "/resources/PosFlow/img/field.png")
+				.attr("xlink:href", "../resources/PosFlow/img/field.png")
 				.attr("transform", function(){
 					return "translate("+ x + "," + y + ")";
 				})
             	.attr("width", width)
-            	.attr("height", height);
+            	.attr("height", height)
+            	.on("click", function(){
+            		last_dbclicked = -1;
+            	})
+				.on("mousemove", updateMousePosition)
+				.on("mouseover", function() {
+					cursor_on_birdseye = true;
+				})
+				.on("mouseout", function() {
+					cursor_on_birdseye = false;
+				});
+
 
     // append the group of the birdseye_paths for the paths of the players
 	birdseyeLayout.append("g")
@@ -27,9 +42,19 @@ function initBirdseye(){
     // append the group of the birdseye_circles for the positions of the players
 	birdseyeLayout.append("g")
 				.attr("id", "birdseye_circles")
+
+	// 连线辅助线
+	birdseyeLayout.append("line")
+				.attr("id", "birdseye_assist_link_line")
+
 }
 
 function updateBirdseye(){
+	// d3.select("svg").append("circle")
+	// .attr("r", 10)
+	// .attr("cx", mouse_position.x)
+	// .attr("cy", mouse_position.y)
+
 	var x = layout.birdseye.x;
 	var y = layout.birdseye.y;
 	var width = layout.birdseye.w;
@@ -66,7 +91,7 @@ function updateBirdseye(){
 
 	var lines = birdseyeLayout.select("#birdseye_lines")
 								.selectAll("line")
-								.data(getLinkData());
+								.data(linked_tracklets);
 
 	lines.exit().remove()
 	lines.enter().append("line")
@@ -89,18 +114,71 @@ function updateBirdseye(){
 		.attr("y2", function(d) {
 			return yScale(birdseyeTransition(d["box2"])["y"]);
 		})
-		.attr("stroke", "gray")
+		.attr("stroke", function(d) {
+			var id = d["id1"];
+			for(var found = true; found; ) {
+				found = false;
+				for (var i = 0; i < linked_pairs.length; ++i) {
+					if (linked_pairs[i][1] == id) {
+						id = linked_pairs[i][0];
+						found = true;
+						break;
+					}
+				}
+			}
+			// console.log(linked_pairs);
+			// console.log(getColorByID(id))
+			return getColorByID(id);
+		})
 		.attr("stroke-width", "5")
 		.attr("stroke-opacity", "0.2")
+		.attr("cursor", "pointer")
 		.on("dblclick", removeLink);
+		
+	var assist_line = birdseyeLayout.select("#birdseye_assist_link_line");
 
+	if (last_dbclicked != -1 && cursor_on_birdseye) {
+		var start_box;
+		var index = current_tracklets.length - 1;
+		for (; index >= 0; --index) {
+			if (current_tracklets[index]["id"] == last_dbclicked) {
+				var start_frame = current_tracklets[index]["start_frame"];
+				start_box = current_tracklets[index]["boxes"][frame-start_frame];
+				break;
+			}
+		}
+		assist_line
+				.attr("x1", function(d) {
+					return mouse_position.x / viewport.scale;
+				})
+				.attr("x2", function(d) {
+					return xScale(birdseyeTransition(start_box)["x"]);
+				})
+				.attr("y1", function(d) {
+					return mouse_position.y / viewport.scale;
+				})
+				.attr("y2", function(d) {
+					return yScale(birdseyeTransition(start_box)["y"]);
+				})
+				.attr("stroke", "gray")
+				.attr("stroke-width", "5")
+				.attr("stroke-opacity", "0.2")
+				.attr("cursor", "default")
+				.on("click", function() {
+					last_dbclicked = -1;
+				});
+	}
+	else{
+		assist_line.attr("stroke-opacity", "0")
+			.attr()
+	}
 
 	// select all circles in birdseye view 
 	var circles = birdseyeLayout.select("#birdseye_circles")
 							.selectAll("circle")
 							.data(current_tracklets)
 	// fit the numbers of elements with the data
-	circles.exit().remove()
+	circles.exit().select()
 	circles.enter().append("circle")
 	// set attributes of the elements
 	circles.attr("class", function(d){
@@ -111,8 +189,8 @@ function updateBirdseye(){
 			return c_name;
 		})
 		.attr("id", function(d,i){
-			if(d["status"]=="selected")
-				console.log(d["id"])
+			// if(d["status"]=="selected")
+				// console.log(d["id"])
 			return "birdseye_circle" + String(i);
 		})
 		.attr("cx", function(d){
@@ -152,14 +230,18 @@ function updateBirdseye(){
 		})
 		.on("click", selectTracklet)
 		.on("dblclick", appendLink)
-		.on("mouseover", function(d){
+		.on("mousemove", function(d, i){
+			updateMousePosition();
+		})
+		.on("mouseover", function(d, i){
+			cursor_on_birdseye = true;
+			mouse_position.x = d3.select(this).attr("cx") * viewport.scale;
+			mouse_position.y = d3.select(this).attr("cy") * viewport.scale;
 			setStatus(d["id"], "hover");
 		})
 		.on("mouseout", function(d){
 			setStatus(d["id"], "default");
 		})
-
-
 
 	// change the data from the pixels in screen to the real play field
 	// that is [0,3840] * [0,800] ----> [0,105]*[0,68] + outside
@@ -169,76 +251,6 @@ function updateBirdseye(){
 		var x_ab = 28.683*(x-1890)/(y+228)+51.7317;
 		var y_ab = 54835.2/(228+y)-54.4;
 		return {x:x_ab, y:y_ab};
-	}
-
-	function removeLink(d) {
-		console.log("remove link")
-		for (var i = 0; i < linked_pairs.length; ++i) {
-			if (linked_pairs[i][0] == d["id1"] && linked_pairs[i][1] == d["id2"]) {
-				linked_pairs.splice(i--, 1);
-			}
-		}
-	}
-
-	function appendLink(d) {
-		console.log("append link")
-		if (last_dbclicked == -1) {
-			last_dbclicked = d["id"];
-		} else {
-			var found = false;
-			for (var i = current_tracklets.length - 1; i >= 0; --i) {
-				if (current_tracklets[i]["id"] == last_dbclicked) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				last_dbclicked = -1;
-			} else {
-				found = false;
-				for (var i = linked_pairs.length - 1; i >= 0; --i) {
-					if (linked_pairs[i][0] == last_dbclicked && linked_pairs[i][1] == d["id"]) {
-						found = true;
-						break;
-					} else if (linked_pairs[i][0] == d["id"] && linked_pairs[i][1] == last_dbclicked){
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					linked_pairs.push([last_dbclicked, d["id"]]);
-				}
-				last_dbclicked = d["id"];
-				for (var i = linked_pairs.length - 1; i >= 0; --i) {
-					console.log(linked_pairs[i]);
-				}
-				console.log("linked data");
-				console.log(getLinkData());
-			}
-		}
-	}
-
-	function getLinkData() {
-		var line_data = [];
-		for (var k = linked_pairs.length - 1; k >= 0; --k) {
-			for (var i = current_tracklets.length - 1; i >= 0; --i) {
-				if (linked_pairs[k][0] == current_tracklets[i]["id"]) {
-					for (var j = current_tracklets.length - 1; j >= 0; --j) {
-						if(linked_pairs[k][1] == current_tracklets[j]["id"]) {
-							var start_frame = current_tracklets[i]["start_frame"];
-							line_data.push(
-							{
-								"id1" : linked_pairs[k][0],
-							    "id2" : linked_pairs[k][1],
-							    "box1" : current_tracklets[i]["boxes"][frame-start_frame],
-							    "box2" : current_tracklets[j]["boxes"][frame-start_frame]
-							})
-						}
-					}
-				}
-			}
-		}
-		return line_data;
 	}
 
 	// generate the path string
@@ -271,4 +283,63 @@ function updateBirdseye(){
 		return lineGenerator(path_data);
 	}
 
+}
+
+function mousePosition(e) {
+	if(e){
+	    if(e.pageX || e.pageY){  //ff,chrome等浏览器
+			return {x:e.pageX - 1, y:e.pageY - 1};
+	    } else {
+			return {  //ie浏览器
+	                x:e.clientX + document.body.scrollLeft - document.body.clientLeft,
+	                y:e.clientY + document.body.scrollTop - document.body.clientTop
+			}
+		}
+	}
+}
+
+function updateMousePosition(d, i) {
+	mouse_position = mousePosition(window.event)
+}
+
+function removeLink(d) {
+	console.log("remove link")
+	for (var i = 0; i < linked_pairs.length; ++i) {
+		if (linked_pairs[i][0] == d["id1"] && linked_pairs[i][1] == d["id2"]) {
+			linked_pairs.splice(i--, 1);
+		}
+	}
+}
+
+function appendLink(d) {
+	console.log("append link")
+	if (last_dbclicked == -1) {
+		last_dbclicked = d["id"];
+	} else {
+		var found = false;
+		for (var i = current_tracklets.length - 1; i >= 0; --i) {
+			if (current_tracklets[i]["id"] == last_dbclicked) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			last_dbclicked = -1;
+		} else {
+			found = false;
+			for (var i = linked_pairs.length - 1; i >= 0; --i) {
+				if (linked_pairs[i][0] == last_dbclicked && linked_pairs[i][1] == d["id"]) {
+					found = true;
+					break;
+				} else if (linked_pairs[i][0] == d["id"] && linked_pairs[i][1] == last_dbclicked){
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				linked_pairs.push([last_dbclicked, d["id"]]);
+			}
+			last_dbclicked = d["id"];
+		}
+	}
 }
