@@ -19,7 +19,7 @@ A tool for merging tracklets of players in videos using d3
 
 1. 打开命令行(cmd)
 2. 输入并运行 npm install http-server -g
-3. 当安装完毕以后, 进入PosFlow文件夹, 双击运行app.bat文件
+3. 当安装完毕以后, 进入PosFlow文件夹, 双击运行run.bat文件
    1. 系统如果提示本地数据文件或者视频文件加载失败, 是正常的, 在中央按钮当中, 第四个按钮可以选择视频文件, 第五个按钮可以选择追踪数据(tracklet)文件, 注意其中第五按钮会取代掉原来的数据, 使用前请注意保存/备份
    2. 如果无法正常运行, 在此处打开命令行, 运行 http-server .. 命令. 并在浏览器中打开http://127.0.0.1:8080/PosFlow/index.html
    3. 如果仍然无法正常运行, 或者有任何其它问题, 请联系我们: forvis@zju.edu.cn

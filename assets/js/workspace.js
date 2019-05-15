@@ -232,10 +232,11 @@ function updateWorkspace(){
 
 	// 如果tracklets为空, 则不能下载
 	if (!tracklets){
-		buttonarea.select("#wsbutton-6").classed("enable",false)
+		d3.select("#wsbutton-6").classed("enable",false)
 	}
 	else{
-		buttonarea.select("#wsbutton-6").classed("enable",true)
+		// console.log("in updateWorkspace tracklets:", tracklets)
+		d3.select("#wsbutton-6").classed("enable",true)
 	}
 
 	if(selected.length==2)
