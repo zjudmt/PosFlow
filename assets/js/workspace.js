@@ -5,12 +5,12 @@ function initWorkspace(){
 	var width_workspace=layout.workspace.w-unit//ws宽度
 	var height_workspace=layout.workspace.h//ws高度
 	
-	var img_list=["/resources/PosFlow/img/chain.png",
-	"/resources/PosFlow/img/chain-broken.png",
-	"/resources/PosFlow/img/trash.png",
-	"/resources/PosFlow/img/video-camera.png",
-	"/resources/PosFlow/img/upload.png",
-	"/resources/PosFlow/img/download.png"]
+	var img_list=["../resources/PosFlow/img/chain.png",
+	"../resources/PosFlow/img/chain-broken.png",
+	"../resources/PosFlow/img/trash.png",
+	"../resources/PosFlow/img/video-camera.png",
+	"../resources/PosFlow/img/upload.png",
+	"../resources/PosFlow/img/download.png"]
 
 	var width_buttonarea=height_workspace/img_list.length
 	var width_graph=width_workspace-width_buttonarea
@@ -66,6 +66,7 @@ function initWorkspace(){
 	buttonarea.select("#wsbutton-5").append("title").text("load")
 	buttonarea.select("#wsbutton-6").append("title").text("save")
 
+	buttonarea.select("#wsbutton-4").classed("enable",true)
 	buttonarea.select("#wsbutton-5").classed("enable",true)
 	buttonarea.select("#wsbutton-6").classed("enable",true)
 	
@@ -191,11 +192,11 @@ function updateWorkspace(){
 	var y_start=layout.workspace.y
 	var width_workspace=layout.workspace.w-unit//ws宽度
 	var height_workspace=layout.workspace.h//ws高度
-	var img_list=["/resources/PosFlow/img/chain.png",
-	"/resources/PosFlow/img/chain-broken.png",
-	"/resources/PosFlow/img/trash.png",
-	"/resources/PosFlow/img/upload.png",
-	"/resources/PosFlow/img/download.png"]
+	var img_list=["../resources/PosFlow/img/chain.png",
+	"../resources/PosFlow/img/chain-broken.png",
+	"../resources/PosFlow/img/trash.png",
+	"../resources/PosFlow/img/upload.png",
+	"../resources/PosFlow/img/download.png"]
 	var width_buttonarea=height_workspace/img_list.length
 	var width_graph=width_workspace-width_buttonarea
 

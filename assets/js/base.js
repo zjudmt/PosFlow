@@ -124,6 +124,16 @@ function initData(data){
 		data[i]["color"] =  getColorByID(data[i].id);
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
+		else{
+			// console.log("hhh")
+			//删除有重合的interpolation以及结束帧小于等于开始帧的interpolation
+			for(let j = 1; j < data[i]["interpolation"].length; ++j){
+				if(data[i]["interpolation"][j][0]<=data[i]["interpolation"][j-1][1]||data[i]["interpolation"][j][0]>=data[i]["interpolation"][j][1]){
+					data[i]['interpolation'].splice(j,1)
+					j--;
+				}
+			}
+		}
 	}
 	if(!data.marklines)
 		data.marklines=[];
@@ -206,11 +216,11 @@ function init(argument) {
 		h: 800,
 		ratio: 5/24,
 		fps: 25,
-		src: "/resources/PosFlow/first_half.mp4",
+		src: "../resources/PosFlow/first_half.mp4",
 	};
 	source_data = {
 		fps: 25,
-		src: "/resources/PosFlow/Germany_tracklets.json",
+		src: "../resources/PosFlow/Germany_tracklets.json",
 	}
 	past_duration = 5 * source_video.fps;
 	future_duration = 5 * source_video.fps;
@@ -228,7 +238,13 @@ function init(argument) {
 	initKeyBoardEvent();
 
 	d3.json(source_data.src, function(error, data){
-		data = filterData(data);
+		if(error){
+			alert("请选择正确的json文件路径")
+			data=[];
+		}
+		else
+			data = filterData(data);
+
 		tracklets = initData(data);
 		cur_data = getTrackletsByFrame(tracklets, 0)
 		current_tracklets = cur_data[0];
@@ -254,6 +270,7 @@ function update(elapsed) {
 	current_tracklets = cur_data[0];
 	path_tracklets = cur_data[1];
 	range_trackletsWsVer = cur_data[2];
+	linked_tracklets = getLinkData();
 
 	updateLayout();
 	updateWorkspace();
@@ -291,7 +308,7 @@ function initSVG(){
 		.attr("id", "image_bg")
 		.attr("width", "100%")
 		.attr("width", "100%")
-		.attr("xlink:href", "/resources/PosFlow/img/image_bg.png")
+		.attr("xlink:href", "../resources/PosFlow/img/image_bg.png")
 }
 
 function initVideo(){
@@ -307,14 +324,34 @@ function initVideo(){
 	
 	// 添加视频
 	
-	video = d3.select("#video-container")
-		.append("video")
+	// video = d3.select("#video-container")
+	// 	.append("video")
+	// 		.attr("width", "100%" )
+	// 		.attr("controls", "false")
+	// 		.attr("preload", "auto")
+	// 		.attr("src", source_video.src) //源视频文件位置
+	// 		.attr("id", "video")
+	// 		.attr("type", "video/mp4")
+
+		p1=new Promise(function(resolve,reject){
+			video = d3.select("#video-container")
+			.append("video")
 			.attr("width", "100%" )
 			.attr("controls", "false")
 			.attr("preload", "auto")
 			.attr("src", source_video.src) //源视频文件位置
 			.attr("id", "video")
 			.attr("type", "video/mp4")
+			
+			video._groups[0][0].oncanplay=(()=>{resolve()});
+			video._groups[0][0].onerror=(()=>{reject()});
+			
+
+		
+		})
+		p1.then(()=>{console.log("load video success")})
+			.catch(()=>{alert("请选择正确的视频源")})
+
 
 	
 	// d3 的 on 方法在这个属性上不知道为什么用不了，所以用原生js监听并获取视频的时长

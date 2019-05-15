@@ -176,7 +176,9 @@ function cutline(){
 	var index_inter = -1, old_end, new_start
 	var new_end = tracklet1.end_frame;
 	for(var i=0;i<tracklet1.interpolation.length;i++){
-		if(frame>=tracklet1.interpolation[i][0]&&frame<=tracklet1.interpolation[i][1]){
+		//考虑在interpolation边缘的剪切情况，由注释中代码改为现代码
+		// if(frame>=tracklet1.interpolation[i][0]&&frame<=tracklet1.interpolation[i][1]){
+		if(frame>=(tracklet1.interpolation[i][0]-1)&&frame<=(tracklet1.interpolation[i][1]+1)){
 			index_inter=i;
 			break;
 		}
@@ -231,6 +233,30 @@ function cutline(){
 	// console.log(tracklet1)
 	// console.log(tracklet2)
 }
+
+function getLinkData() {
+	var line_data = [];
+	for (var k = linked_pairs.length - 1; k >= 0; --k) {
+		for (var i = current_tracklets.length - 1; i >= 0; --i) {
+			if (linked_pairs[k][0] == current_tracklets[i]["id"]) {
+				for (var j = current_tracklets.length - 1; j >= 0; --j) {
+					if(linked_pairs[k][1] == current_tracklets[j]["id"]) {
+						var start_frame = current_tracklets[i]["start_frame"];
+						line_data.push(
+						{
+							"id1" : linked_pairs[k][0],
+						    "id2" : linked_pairs[k][1],
+						    "box1" : current_tracklets[i]["boxes"][frame-start_frame],
+						    "box2" : current_tracklets[j]["boxes"][frame-start_frame]
+						})
+					}
+				}
+			}
+		}
+	}
+	return line_data;
+}
+	
 
 
 function exchange(){
@@ -290,7 +316,7 @@ function selectvideo(){
 }
 
 function readTracklets () {
-        
+        selected=[];
         var localFile = document.getElementById("uploadTracklets").files[0];
 
         var reader = new FileReader();
