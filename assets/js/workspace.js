@@ -5,12 +5,12 @@ function initWorkspace(){
 	var width_workspace=layout.workspace.w-unit//ws宽度
 	var height_workspace=layout.workspace.h//ws高度
 	
-	var img_list=["/resources/PosFlow/img/chain.png",
-	"/resources/PosFlow/img/chain-broken.png",
-	"/resources/PosFlow/img/trash.png",
-	"/resources/PosFlow/img/video-camera.png",
-	"/resources/PosFlow/img/upload.png",
-	"/resources/PosFlow/img/download.png"]
+	var img_list=["../resources/PosFlow/img/chain.png",
+	"../resources/PosFlow/img/chain-broken.png",
+	"../resources/PosFlow/img/trash.png",
+	"../resources/PosFlow/img/video-camera.png",
+	"../resources/PosFlow/img/upload.png",
+	"../resources/PosFlow/img/download.png"]
 
 	var width_buttonarea=height_workspace/img_list.length
 	var width_graph=width_workspace-width_buttonarea
@@ -66,6 +66,7 @@ function initWorkspace(){
 	buttonarea.select("#wsbutton-5").append("title").text("load")
 	buttonarea.select("#wsbutton-6").append("title").text("save")
 
+	buttonarea.select("#wsbutton-4").classed("enable",true)
 	buttonarea.select("#wsbutton-5").classed("enable",true)
 	buttonarea.select("#wsbutton-6").classed("enable",true)
 	
@@ -191,11 +192,11 @@ function updateWorkspace(){
 	var y_start=layout.workspace.y
 	var width_workspace=layout.workspace.w-unit//ws宽度
 	var height_workspace=layout.workspace.h//ws高度
-	var img_list=["/resources/PosFlow/img/chain.png",
-	"/resources/PosFlow/img/chain-broken.png",
-	"/resources/PosFlow/img/trash.png",
-	"/resources/PosFlow/img/upload.png",
-	"/resources/PosFlow/img/download.png"]
+	var img_list=["../resources/PosFlow/img/chain.png",
+	"../resources/PosFlow/img/chain-broken.png",
+	"../resources/PosFlow/img/trash.png",
+	"../resources/PosFlow/img/upload.png",
+	"../resources/PosFlow/img/download.png"]
 	var width_buttonarea=height_workspace/img_list.length
 	var width_graph=width_workspace-width_buttonarea
 
@@ -216,8 +217,6 @@ function updateWorkspace(){
 
 
 
-
-
 	var area_selected=d3.select("#content-selected")
 	var area_toselect=d3.select("#content-toselect")
 
@@ -230,6 +229,15 @@ function updateWorkspace(){
 
 	cut_button.classed("enable",false);
 	trash_button.classed("enable",false);
+
+	// 如果tracklets为空, 则不能下载
+	if (!tracklets){
+		d3.select("#wsbutton-6").classed("enable",false)
+	}
+	else{
+		// console.log("in updateWorkspace tracklets:", tracklets)
+		d3.select("#wsbutton-6").classed("enable",true)
+	}
 
 	if(selected.length==2)
 		merge_button.classed("enable",true)

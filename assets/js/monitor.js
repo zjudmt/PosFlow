@@ -10,7 +10,6 @@ function initMonitor() {
 				+ " , " + d.y + " )";
 				return str
 			})
-			
 
 	// 用flag_canplaythrough来判断是否已经初始化过monitor了
 	flag_canplaythrough = false;
@@ -85,6 +84,15 @@ function initMain() {
 		.attr("width", layout_main.w)
 		.style("fill", "none")
 		.style("pointer-events", "all")
+		.on("click", function() {
+			// 单击空白区域可以控制视频播放和暂停
+			if(video.property("paused")){
+				video._groups[0][0].play();
+			}
+			else{
+				video._groups[0][0].pause();
+			}
+		})
 		// .call(drag_main)
 		.call(zoom_main)
 
@@ -100,7 +108,10 @@ function initMain() {
 
 	rect = main.append("g")
 		.attr("id", "rects")
-		
+
+	line = main.append("g")
+		.attr("id", "lines")
+
 }
 
 function zoomed_main() {
@@ -135,16 +146,19 @@ function updateMain(){
 	rects = main.select("#rects")
 		.selectAll("rect").data(current_tracklets)
 
+	lines = main.select("#lines")
+		.selectAll("line").data(linked_tracklets)
 
 
 	// 如果有多的元素就remove掉
 	paths.exit().remove();
 	rects.exit().remove();
+	lines.exit().remove();
 
 	// 如果需要新的元素就添加
 	new_paths =  paths.enter().append("path")
 	new_rects =  rects.enter().append("rect")
-
+	new_lines =  lines.enter().append("line")
 
 
 	// 在绑定矩形之前先绑定路径,避免矩形被路径遮挡
@@ -157,6 +171,7 @@ function updateMain(){
 			return "path_"+d.id;
 		})
 		.attr("d", trackGenerator)
+		.attr("cursor", "none")
 		.attr("stroke", function(d){
 			if(d.status == "conflicted")
 				return "#7a7374";
@@ -187,7 +202,7 @@ function updateMain(){
 			else
 				return "";
 		})
-		.on("click", selectTracklet )
+		.on("click", selectTracklet)
 		.on("mouseover", function(d){
 			setStatus(d.id, "hover")
 		})
@@ -197,7 +212,41 @@ function updateMain(){
 		
 	})
 
-	
+	lines.attr("class", "main line")
+		.attr("id", function(d, i) {
+			return "main_line" + String(i);
+		})
+		.attr("x1", function(d) {
+			return vid2x(d["box1"][0]) + vid2x(d["box1"][2] / 2 );
+		})
+		.attr("x2", function(d) {
+			return vid2x(d["box2"][0]) + vid2x(d["box2"][2] / 2 );
+		})
+		.attr("y1", function(d) {
+			return vid2x(d["box1"][1]) + vid2x(d["box1"][3] / 2 );
+		})
+		.attr("y2", function(d) {
+			return vid2x(d["box2"][1]) + vid2x(d["box2"][3] / 2 );
+		})
+		.attr("stroke", function(d) {
+			var id = d["id1"];
+			for(var found = true; found; ) {
+				found = false;
+				for (var i = 0; i < linked_pairs.length; ++i) {
+					if (linked_pairs[i][1] == id) {
+						id = linked_pairs[i][0];
+						found = true;
+						break;
+					}
+				}
+			}
+			// console.log(linked_pairs);
+			// console.log(getColorByID(id))
+			return getColorByID(id);
+		})
+		.attr("stroke-width", "3")
+		.attr("stroke-opacity", "0.2")
+		// .on("dblclick", removeLink);
 
 	// 路径生成器
 	function trackGenerator(d){
@@ -535,8 +584,8 @@ function updateMark(){
 
 function initMouseScroll() {
 	document.body.onmousewheel = function(event){
-	    var t = event || window.event;
-	    // console.log(t);
+		var t = event || window.event;
+		// console.log(t);
 	}
 }
 
