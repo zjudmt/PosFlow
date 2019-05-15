@@ -125,12 +125,11 @@ function initData(data){
 		if(! data[i]["interpolation"])
 			data[i]["interpolation"] = [];
 		else{
-			console.log("hhh")
+			// console.log("hhh")
 			//删除有重合的interpolation以及结束帧小于等于开始帧的interpolation
 			for(let j = 1; j < data[i]["interpolation"].length; ++j){
 				if(data[i]["interpolation"][j][0]<=data[i]["interpolation"][j-1][1]||data[i]["interpolation"][j][0]>=data[i]["interpolation"][j][1]){
 					data[i]['interpolation'].splice(j,1)
-					
 					j--;
 				}
 			}
@@ -265,13 +264,14 @@ function update(elapsed) {
 	fps = (1000/interval)
   
 	if(fps < 10)
-		// console.log("fps", fps, " at frame: ", frame);
+		console.log("fps", fps, " at frame: ", frame);
 	
 	map = [];
 	cur_data = getTrackletsByFrame(tracklets, frame)
 	current_tracklets = cur_data[0];
 	path_tracklets = cur_data[1];
 	range_trackletsWsVer = cur_data[2];
+	linked_tracklets = getLinkData();
 
 	updateLayout();
 	updateWorkspace();

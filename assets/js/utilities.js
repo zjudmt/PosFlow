@@ -234,6 +234,30 @@ function cutline(){
 	// console.log(tracklet2)
 }
 
+function getLinkData() {
+	var line_data = [];
+	for (var k = linked_pairs.length - 1; k >= 0; --k) {
+		for (var i = current_tracklets.length - 1; i >= 0; --i) {
+			if (linked_pairs[k][0] == current_tracklets[i]["id"]) {
+				for (var j = current_tracklets.length - 1; j >= 0; --j) {
+					if(linked_pairs[k][1] == current_tracklets[j]["id"]) {
+						var start_frame = current_tracklets[i]["start_frame"];
+						line_data.push(
+						{
+							"id1" : linked_pairs[k][0],
+						    "id2" : linked_pairs[k][1],
+						    "box1" : current_tracklets[i]["boxes"][frame-start_frame],
+						    "box2" : current_tracklets[j]["boxes"][frame-start_frame]
+						})
+					}
+				}
+			}
+		}
+	}
+	return line_data;
+}
+	
+
 
 function exchange(){
 	console.log(d3.selectAll(".enable").size())

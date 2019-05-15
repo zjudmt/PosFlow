@@ -43,27 +43,10 @@ function initBirdseye(){
 	birdseyeLayout.append("g")
 				.attr("id", "birdseye_circles")
 
+	// 连线辅助线
+	birdseyeLayout.append("line")
+				.attr("id", "birdseye_assist_link_line")
 
-	function updateMousePosition() {
-		mouse_position = mousePosition(window.event)
-		var scale = window.innerWidth / 1536;
-
-		var x = layout.birdseye.x;
-		var y = layout.birdseye.y;
-		var w = layout.birdseye.w;
-		var h = layout.birdseye.h;
-	}
-
-	function mousePosition(e) {
-    	if(e.pageX || e.pageY){  //ff,chrome等浏览器
-			return {x:e.pageX - 2, y:e.pageY - 2};
-	    } else {
-			return {  //ie浏览器
-                x:e.clientX + document.body.scrollLeft - document.body.clientLeft,
-                y:e.clientY + document.body.scrollTop - document.body.clientTop
-			}
-     	}
-	}
 }
 
 function updateBirdseye(){
@@ -108,7 +91,7 @@ function updateBirdseye(){
 
 	var lines = birdseyeLayout.select("#birdseye_lines")
 								.selectAll("line")
-								.data(getLinkData());
+								.data(linked_tracklets);
 
 	lines.exit().remove()
 	lines.enter().append("line")
@@ -149,10 +132,11 @@ function updateBirdseye(){
 		})
 		.attr("stroke-width", "5")
 		.attr("stroke-opacity", "0.2")
-		.attr("cursor", "crosshair")
+		.attr("cursor", "pointer")
 		.on("dblclick", removeLink);
+		
+	var assist_line = birdseyeLayout.select("#birdseye_assist_link_line");
 
-	d3.select("#birdseye_assist_link_line").remove()
 	if (last_dbclicked != -1 && cursor_on_birdseye) {
 		var start_box;
 		var index = current_tracklets.length - 1;
@@ -163,17 +147,15 @@ function updateBirdseye(){
 				break;
 			}
 		}
-		var scale = window.innerWidth / 1536;
-		birdseyeLayout.append("line")
-				.attr("id", "birdseye_assist_link_line")
+		assist_line
 				.attr("x1", function(d) {
-					return mouse_position.x / scale;
+					return mouse_position.x / viewport.scale;
 				})
 				.attr("x2", function(d) {
 					return xScale(birdseyeTransition(start_box)["x"]);
 				})
 				.attr("y1", function(d) {
-					return mouse_position.y / scale;
+					return mouse_position.y / viewport.scale;
 				})
 				.attr("y2", function(d) {
 					return yScale(birdseyeTransition(start_box)["y"]);
@@ -181,12 +163,15 @@ function updateBirdseye(){
 				.attr("stroke", "gray")
 				.attr("stroke-width", "5")
 				.attr("stroke-opacity", "0.2")
-				.attr("cursor", "crosshair")
+				.attr("cursor", "default")
 				.on("click", function() {
 					last_dbclicked = -1;
 				});
 	}
-
+	else{
+		assist_line.attr("stroke-opacity", "0")
+			.attr()
+	}
 
 	// select all circles in birdseye view 
 	var circles = birdseyeLayout.select("#birdseye_circles")
@@ -204,8 +189,8 @@ function updateBirdseye(){
 			return c_name;
 		})
 		.attr("id", function(d,i){
-			if(d["status"]=="selected")
-				console.log(d["id"])
+			// if(d["status"]=="selected")
+				// console.log(d["id"])
 			return "birdseye_circle" + String(i);
 		})
 		.attr("cx", function(d){
@@ -245,16 +230,18 @@ function updateBirdseye(){
 		})
 		.on("click", selectTracklet)
 		.on("dblclick", appendLink)
-		.on("mouseover", function(d){
+		.on("mousemove", function(d, i){
+			updateMousePosition();
+		})
+		.on("mouseover", function(d, i){
 			cursor_on_birdseye = true;
+			mouse_position.x = d3.select(this).attr("cx") * viewport.scale;
+			mouse_position.y = d3.select(this).attr("cy") * viewport.scale;
 			setStatus(d["id"], "hover");
 		})
 		.on("mouseout", function(d){
-			cursor_on_birdseye = false;
 			setStatus(d["id"], "default");
 		})
-
-
 
 	// change the data from the pixels in screen to the real play field
 	// that is [0,3840] * [0,800] ----> [0,105]*[0,68] + outside
@@ -265,72 +252,6 @@ function updateBirdseye(){
 		var y_ab = 54835.2/(228+y)-54.4;
 		return {x:x_ab, y:y_ab};
 	}
-
-	function removeLink(d) {
-		console.log("remove link")
-		for (var i = 0; i < linked_pairs.length; ++i) {
-			if (linked_pairs[i][0] == d["id1"] && linked_pairs[i][1] == d["id2"]) {
-				linked_pairs.splice(i--, 1);
-			}
-		}
-	}
-
-	function appendLink(d) {
-		console.log("append link")
-		if (last_dbclicked == -1) {
-			last_dbclicked = d["id"];
-		} else {
-			var found = false;
-			for (var i = current_tracklets.length - 1; i >= 0; --i) {
-				if (current_tracklets[i]["id"] == last_dbclicked) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				last_dbclicked = -1;
-			} else {
-				found = false;
-				for (var i = linked_pairs.length - 1; i >= 0; --i) {
-					if (linked_pairs[i][0] == last_dbclicked && linked_pairs[i][1] == d["id"]) {
-						found = true;
-						break;
-					} else if (linked_pairs[i][0] == d["id"] && linked_pairs[i][1] == last_dbclicked){
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					linked_pairs.push([last_dbclicked, d["id"]]);
-				}
-				last_dbclicked = d["id"];
-			}
-		}
-	}
-
-	function getLinkData() {
-		var line_data = [];
-		for (var k = linked_pairs.length - 1; k >= 0; --k) {
-			for (var i = current_tracklets.length - 1; i >= 0; --i) {
-				if (linked_pairs[k][0] == current_tracklets[i]["id"]) {
-					for (var j = current_tracklets.length - 1; j >= 0; --j) {
-						if(linked_pairs[k][1] == current_tracklets[j]["id"]) {
-							var start_frame = current_tracklets[i]["start_frame"];
-							line_data.push(
-							{
-								"id1" : linked_pairs[k][0],
-							    "id2" : linked_pairs[k][1],
-							    "box1" : current_tracklets[i]["boxes"][frame-start_frame],
-							    "box2" : current_tracklets[j]["boxes"][frame-start_frame]
-							})
-						}
-					}
-				}
-			}
-		}
-		return line_data;
-	}
-	
 
 	// generate the path string
 	function trackGenerator(d){
@@ -362,4 +283,63 @@ function updateBirdseye(){
 		return lineGenerator(path_data);
 	}
 
+}
+
+function mousePosition(e) {
+	if(e){
+	    if(e.pageX || e.pageY){  //ff,chrome等浏览器
+			return {x:e.pageX - 1, y:e.pageY - 1};
+	    } else {
+			return {  //ie浏览器
+	                x:e.clientX + document.body.scrollLeft - document.body.clientLeft,
+	                y:e.clientY + document.body.scrollTop - document.body.clientTop
+			}
+		}
+	}
+}
+
+function updateMousePosition(d, i) {
+	mouse_position = mousePosition(window.event)
+}
+
+function removeLink(d) {
+	console.log("remove link")
+	for (var i = 0; i < linked_pairs.length; ++i) {
+		if (linked_pairs[i][0] == d["id1"] && linked_pairs[i][1] == d["id2"]) {
+			linked_pairs.splice(i--, 1);
+		}
+	}
+}
+
+function appendLink(d) {
+	console.log("append link")
+	if (last_dbclicked == -1) {
+		last_dbclicked = d["id"];
+	} else {
+		var found = false;
+		for (var i = current_tracklets.length - 1; i >= 0; --i) {
+			if (current_tracklets[i]["id"] == last_dbclicked) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			last_dbclicked = -1;
+		} else {
+			found = false;
+			for (var i = linked_pairs.length - 1; i >= 0; --i) {
+				if (linked_pairs[i][0] == last_dbclicked && linked_pairs[i][1] == d["id"]) {
+					found = true;
+					break;
+				} else if (linked_pairs[i][0] == d["id"] && linked_pairs[i][1] == last_dbclicked){
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				linked_pairs.push([last_dbclicked, d["id"]]);
+			}
+			last_dbclicked = d["id"];
+		}
+	}
 }

@@ -85,17 +85,16 @@ function initMain() {
 		.style("fill", "none")
 		.style("pointer-events", "all")
 		.on("click", function() {
-			last_dbclicked = -1;
+			// 单击空白区域可以控制视频播放和暂停
+			if(video.property("paused")){
+				video._groups[0][0].play();
+			}
+			else{
+				video._groups[0][0].pause();
+			}
 		})
 		// .call(drag_main)
 		.call(zoom_main)
-		.on("mousemove", updateMousePosition)
-		.on("mouseover", function() {
-			cursor_on_main = true;
-		})
-		.on("mouseout", function() {
-			cursor_on_main = false;
-		})
 
 	main = monitor.append("g")
 		.attr("clip-path", "url(#main-clip)")
@@ -112,25 +111,6 @@ function initMain() {
 
 	line = main.append("g")
 		.attr("id", "lines")
-
-	main_mouse_position = {x : -1, y : -1};
-    cursor_on_main = false;
-
-
-	function updateMousePosition() {
-		main_mouse_position = mousePosition(window.event)
-	}
-
-	function mousePosition(e) {
-    	if(e.pageX || e.pageY){  //ff,chrome等浏览器
-			return {x:e.pageX - 2, y:e.pageY - 2};
-	    } else {
-			return {  //ie浏览器
-                x:e.clientX + document.body.scrollLeft - document.body.clientLeft,
-                y:e.clientY + document.body.scrollTop - document.body.clientTop
-			}
-     	}
-	}
 
 }
 
@@ -167,7 +147,7 @@ function updateMain(){
 		.selectAll("rect").data(current_tracklets)
 
 	lines = main.select("#lines")
-		.selectAll("line").data(getLinkData())
+		.selectAll("line").data(linked_tracklets)
 
 
 	// 如果有多的元素就remove掉
@@ -191,12 +171,46 @@ function updateMain(){
 			return "path_"+d.id;
 		})
 		.attr("d", trackGenerator)
+		.attr("cursor", "none")
 		.attr("stroke", function(d){
 			if(d.status == "conflicted")
 				return "#7a7374";
 			else
 				return d.color;
 	});
+
+	// 绑定矩形,长宽通过比例尺计算 同时绑定操作元素
+	rects.attr("transform", getPlayerTransform)
+		.attr("class", function(d){
+			return d.status + " main";
+		})
+		.attr("id", function(d){
+			return "rect_"+d.id;
+		})
+		.attr("width", getPlayerRectWidth)
+		.attr("height", getPlayerRectHeight)
+		.attr("stroke", function(d){
+			// console.log(d.status)
+			if(d.status == "conflicted")
+				return "#7a7374";
+			else
+				return d.color;
+		})
+		.attr("stroke-dasharray", function(d){
+			if(isDashed(d))
+				return "4,4";
+			else
+				return "";
+		})
+		.on("click", selectTracklet)
+		.on("mouseover", function(d){
+			setStatus(d.id, "hover")
+		})
+		.on("mouseout", function(d){
+			setStatus(d.id, "default")
+
+		
+	})
 
 	lines.attr("class", "main line")
 		.attr("id", function(d, i) {
@@ -232,146 +246,7 @@ function updateMain(){
 		})
 		.attr("stroke-width", "3")
 		.attr("stroke-opacity", "0.2")
-		.attr("cursor", "crosshair")
-		.on("dblclick", removeLink);
-
-	d3.select("#main_assist_link_line").remove()
-	if (last_dbclicked != -1 && cursor_on_main) {
-		var start_box;
-		var index = current_tracklets.length - 1;
-		for (; index >= 0; --index) {
-			if (current_tracklets[index]["id"] == last_dbclicked) {
-				var start_frame = current_tracklets[index]["start_frame"];
-				start_box = current_tracklets[index]["boxes"][frame-start_frame];
-				break;
-			}
-		}
-		var scale = window.innerWidth / 1536;
-		main.append("line")
-				.attr("id", "main_assist_link_line")
-				.attr("x1", function(d) {
-					return main_mouse_position.x / scale;
-				})
-				.attr("x2", function(d) {
-					return vid2x(start_box[0]) + vid2x(start_box[2] / 2 );
-				})
-				.attr("y1", function(d) {
-					return (main_mouse_position.y) / scale - layout.monitor.y;
-				})
-				.attr("y2", function(d) {
-					return vid2x(start_box[1]) + vid2x(start_box[3] / 2 );
-				})
-				.attr("stroke", "gray")
-				.attr("stroke-width", "3")
-				.attr("stroke-opacity", "0.2")
-				.attr("cursor", "crosshair")
-				.on("click", function() {
-					last_dbclicked = -1;
-				});
-	}
-
-
-	// 绑定矩形,长宽通过比例尺计算 同时绑定操作元素
-	rects.attr("transform", getPlayerTransform)
-		.attr("class", function(d){
-			return d.status + " main";
-		})
-		.attr("id", function(d){
-			return "rect_"+d.id;
-		})
-		.attr("width", getPlayerRectWidth)
-		.attr("height", getPlayerRectHeight)
-		.attr("stroke", function(d){
-			// console.log(d.status)
-			if(d.status == "conflicted")
-				return "#7a7374";
-			else
-				return d.color;
-		})
-		.attr("stroke-dasharray", function(d){
-			if(isDashed(d))
-				return "4,4";
-			else
-				return "";
-		})
-		.on("click", selectTracklet)
-		.on("dblclick", appendLink)
-		.on("click", selectTracklet )
-		.on("mouseover", function(d){
-			cursor_on_main = true
-			setStatus(d.id, "hover")
-		})
-		.on("mouseout", function(d){
-			cursor_on_main = false
-			setStatus(d.id, "default")
-
-		
-	})
-
-	function getLinkData() {
-		var line_data = [];
-		for (var k = linked_pairs.length - 1; k >= 0; --k) {
-			for (var i = current_tracklets.length - 1; i >= 0; --i) {
-				if (linked_pairs[k][0] == current_tracklets[i]["id"]) {
-					for (var j = current_tracklets.length - 1; j >= 0; --j) {
-						if(linked_pairs[k][1] == current_tracklets[j]["id"]) {
-							var start_frame = current_tracklets[i]["start_frame"];
-							line_data.push(
-							{
-								"id1" : linked_pairs[k][0],
-							    "id2" : linked_pairs[k][1],
-							    "box1" : current_tracklets[i]["boxes"][frame-start_frame],
-							    "box2" : current_tracklets[j]["boxes"][frame-start_frame]
-							})
-						}
-					}
-				}
-			}
-		}
-		return line_data;
-	}
-
-	function removeLink(d) {
-		console.log("remove link")
-		for (var i = 0; i < linked_pairs.length; ++i) {
-			if (linked_pairs[i][0] == d["id1"] && linked_pairs[i][1] == d["id2"]) {
-				linked_pairs.splice(i--, 1);
-			}
-		}
-	}
-
-	function appendLink(d) {
-		console.log("append link")
-		if (last_dbclicked == -1) {
-			last_dbclicked = d["id"];
-		} else {
-			var found = false;
-			for (var i = current_tracklets.length - 1; i >= 0; --i) {
-				if (current_tracklets[i]["id"] == last_dbclicked) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				last_dbclicked = -1;
-			} else {
-				found = false;
-				for (var i = linked_pairs.length - 1; i >= 0; --i) {
-					if (linked_pairs[i][0] == last_dbclicked && linked_pairs[i][1] == d["id"]) {
-						found = true;
-						break;
-					} else if (linked_pairs[i][0] == d["id"] && linked_pairs[i][1] == last_dbclicked){
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					linked_pairs.push([last_dbclicked, d["id"]]);
-				}
-				last_dbclicked = d["id"];
-			}
-		}
-	}
+		// .on("dblclick", removeLink);
 
 	// 路径生成器
 	function trackGenerator(d){
@@ -709,8 +584,8 @@ function updateMark(){
 
 function initMouseScroll() {
 	document.body.onmousewheel = function(event){
-	    var t = event || window.event;
-	    // console.log(t);
+		var t = event || window.event;
+		// console.log(t);
 	}
 }
 
