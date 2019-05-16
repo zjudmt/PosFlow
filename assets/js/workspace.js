@@ -231,7 +231,7 @@ function updateWorkspace(){
 	trash_button.classed("enable",false);
 
 	// 如果tracklets为空, 则不能下载
-	if (!tracklets){
+	if (!tracklets.length > 0){
 		d3.select("#wsbutton-6").classed("enable",false)
 	}
 	else{

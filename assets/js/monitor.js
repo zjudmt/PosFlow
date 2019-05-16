@@ -391,10 +391,10 @@ function initControls(){
 			x: unit * lo.button.x , y: unit * lo.button.y ,
 			w: unit * lo.button.w , h: unit * lo.button.h ,
 			play:{
-				href: "/resources/PosFlow/img/button_play.png"
+				href: "../resources/PosFlow/img/button_play.png"
 			},
 			pause:{
-				href: "/resources/PosFlow/img/button_pause.png"
+				href: "../resources/PosFlow/img/button_pause.png"
 			}
 		},
 		timebox:{				
