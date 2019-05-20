@@ -199,7 +199,7 @@ function updateWorkspace(){
 	"../resources/PosFlow/img/download.png"]
 	var width_buttonarea=height_workspace/img_list.length
 	var width_graph=width_workspace-width_buttonarea
-
+	var buttonarea = d3.select("#ws_ba")
 
 	var color_bg="#191b21" //
 
@@ -223,9 +223,9 @@ function updateWorkspace(){
 	
 	//更新按钮状态
 
-	merge_button=d3.select("#wsbutton-1")
-	cut_button=d3.select("#wsbutton-2")
-	trash_button=d3.select("#wsbutton-3")
+	merge_button=buttonarea.select("#wsbutton-1")
+	cut_button=buttonarea.select("#wsbutton-2")
+	trash_button=buttonarea.select("#wsbutton-3")
 
 	cut_button.classed("enable",false);
 	trash_button.classed("enable",false);
